@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>היומן המשפחתי שלנו</title>
+<style>
+:root{--bg:#fff7ee;--card:#fff;--ink:#3b2f2a;--mute:#8a7a70;--line:#f0e1d2;--acc:#e8734a;--today:#fff0d6;--shadow:0 2px 8px rgba(120,80,40,.08);
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root{--bg:#1f1a17;--card:#2b2420;--ink:#f3e8de;--mute:#b3a296;--line:#3d332d;--acc:#f08a63;--today:#4a3722;--shadow:none}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:"Heebo","Assistant",system-ui,sans-serif;font-size:16px}
+header{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;padding:14px 16px}
+h1{margin:0;font-size:1.5rem}h1 span{color:var(--acc)}
+.sub{color:var(--mute);font-size:.95rem}
+.nav{display:flex;gap:6px;align-items:center}
+button{font:inherit;cursor:pointer;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:10px;padding:8px 12px}
+button.p{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.legend{display:flex;flex-wrap:wrap;gap:8px;padding:0 16px 10px;align-items:center}
+.chip{display:inline-flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--line);border-radius:99px;padding:4px 12px;font-size:.9rem}
+.dot{width:12px;height:12px;border-radius:50%;background:var(--c)}
+main{padding:0 12px 12px}
+.grid{display:grid;grid-template-columns:repeat(7,1fr);gap:8px}
+.day{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);display:flex;flex-direction:column;min-height:300px;min-width:0}
+.day.today{background:var(--today);border:2px solid var(--acc)}
+.dh{padding:8px 10px;display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--line)}
+.dh b{font-size:1.05rem}.dh small{color:var(--mute)}
+.day.today .dh b{color:var(--acc)}
+.db{padding:6px;display:flex;flex-direction:column;gap:5px;flex:1;cursor:pointer}
+.it{background:var(--card);border-inline-start:5px solid var(--c);border-radius:8px;padding:5px 8px;font-size:.92rem;box-shadow:var(--shadow);word-break:break-word}
+.it .t{color:var(--mute);font-size:.8rem;display:block}
+.it.task{display:flex;gap:6px;align-items:flex-start}
+.it.done .x{text-decoration:line-through;opacity:.55}
+.rec{font-size:.75rem;color:var(--mute)}
+.add{margin:0 6px 6px;border-style:dashed;color:var(--mute);padding:4px}
+.notes{margin-top:12px;background:#fff3c4;color:#4a3d10;border-radius:14px;padding:12px 16px;box-shadow:var(--shadow)}
+.notes h2{margin:0 0 8px;font-size:1.1rem}
+.notes li{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
+.notes ul{list-style:none;margin:0;padding:0}
+.notes input{background:#fffbe6;color:#4a3d10;border:1px solid #e6d58a}
+.row{display:flex;gap:6px;margin-top:8px}
+input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);width:100%}
+.ov{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;padding:16px;z-index:9}
+.ov.on{display:flex}
+.md{background:var(--card);border-radius:16px;padding:18px;width:100%;max-width:420px;max-height:90vh;overflow:auto}
+.md h3{margin:0 0 10px}.md label{display:block;margin:10px 0 3px;font-size:.9rem;color:var(--mute)}
+.seg{display:flex;gap:6px}.seg button{flex:1}.seg .on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.foot{display:flex;gap:8px;margin-top:16px}.foot .p{flex:1}
+.auth{max-width:360px;margin:12vh auto;padding:24px;background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow);text-align:center}
+.auth input{margin:6px 0;direction:ltr;text-align:left}.auth button{width:100%;margin-top:8px}
+.err{color:#c0392b;min-height:1.3em;font-size:.9rem}
+.hid{display:none!important}
+@media (max-width:900px){.grid{grid-template-columns:1fr}.day{min-height:0}}
+</style>
+</head>
+<body>
+<section id="login" class="auth hid">
+  <h1>היומן המשפחתי <span>שלנו</span></h1><p class="sub">התחברו כדי להמשיך</p>
+  <form id="lf"><input id="em" type="email" placeholder="אימייל" autocomplete="username" required>
+  <input id="pw" type="password" placeholder="סיסמה" autocomplete="current-password" required>
+  <div class="err" id="lerr"></div><button class="p" type="submit">התחברות</button></form>
+</section>
+<section id="denied" class="auth hid">
+  <h1>אין הרשאה</h1><p class="sub">החשבון הזה עדיין לא אושר לצפות ביומן. בקשו מבעל היומן לאשר אותו.</p>
+  <button class="out">יציאה</button>
+</section>
+
+<div id="app" class="hid">
+<header>
+  <div><h1>היומן המשפחתי <span>שלנו</span></h1><div class="sub" id="range"></div></div>
+  <div class="nav"><button id="next" aria-label="שבוע הבא">→</button><button id="today">היום</button><button id="prev" aria-label="שבוע קודם">←</button><button class="p" id="addTop">+ הוספה</button><button class="out">יציאה</button></div>
+</header>
+<div class="legend" id="legend"></div>
+<main><div class="grid" id="grid"></div>
+<section class="notes"><h2>📌 חשוב לזכור השבוע</h2><ul id="notes"></ul>
+<div class="row"><input id="noteIn" placeholder="הוסיפו תזכורת…"><button id="noteAdd">הוספה</button></div></section></main>
+</div>
+
+<div class="ov" id="ov"><div class="md">
+  <h3 id="mt">הוספה</h3>
+  <div class="seg"><button id="tyE" class="on">אירוע</button><button id="tyT">משימה</button></div>
+  <label>כותרת</label><input id="fT">
+  <label>תאריך</label><input id="fD" type="date">
+  <label id="lT">שעה (לא חובה)</label><input id="fH" type="time">
+  <label>למי?</label><select id="fM"></select>
+  <label id="lR"><input id="fR" type="checkbox" style="width:auto"> חוזר מדי שבוע</label>
+  <div class="foot"><button class="p" id="sv">שמירה</button><button id="del">מחיקה</button><button id="cx">ביטול</button></div>
+</div></div>
+
+<div class="ov" id="ovM"><div class="md">
+  <h3>בני המשפחה</h3><div id="mList"></div>
+  <label>שם חדש</label><input id="mN"><label>צבע</label><input id="mC" type="color" value="#4aa3e8">
+  <div class="foot"><button class="p" id="mAdd">הוספה</button><button id="mX">סגירה</button></div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+/* ---- Supabase settings (public values, safe to keep here; protection comes from login + RLS) ---- */
+const SB_URL='https://pkghylgchdnykgamahjh.supabase.co';
+const SB_KEY='sb_publishable_TlZtdKg6YXzgggxFpBbPhQ_FghbB3Ap';
+const db=supabase.createClient(SB_URL,SB_KEY);
+
+const $=s=>document.querySelector(s);
+const DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const MON=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
+const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const sow=d=>addD(d,-d.getDay());
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let wk=sow(new Date()),editId=null,type='event',S={members:[],items:[],notes:[]},chan=null;
+const fail=e=>alert('משהו השתבש: '+(e.message||e));
+const mem=id=>S.members.find(m=>m.id===id)||{name:'?',color:'#999'};
+const show=x=>['login','denied','app'].forEach(k=>$('#'+k).classList.toggle('hid',k!==x));
+
+/* ---- loading data from the database ---- */
+async function reload(t){
+  const{data,error}=await db.from(t==='notes'?'week_notes':t).select('*').order('created_at');
+  if(error)return fail(error);
+  if(t==='members')S.members=data.map(r=>({id:r.id,name:r.name,color:r.color}));
+  else if(t==='items')S.items=data.map(r=>({id:r.id,type:r.type,title:r.title,date:r.item_date,time:(r.item_time||'').slice(0,5),m:r.member_id,rec:r.recurring,done:r.done}));
+  else S.notes=data.map(r=>({id:r.id,w:r.week_start,text:r.content}));
+  render();
+}
+function subscribe(){
+  if(chan)db.removeChannel(chan);
+  chan=db.channel('family');
+  [['members','members'],['items','items'],['week_notes','notes']].forEach(([tb,k])=>
+    chan.on('postgres_changes',{event:'*',schema:'public',table:tb},()=>reload(k)));
+  chan.subscribe();
+}
+
+/* ---- login ---- */
+async function enter(){
+  const{data:{session}}=await db.auth.getSession();
+  if(!session)return show('login');
+  const{data,error}=await db.from('family_access').select('user_id').maybeSingle();
+  if(error||!data)return show('denied');
+  show('app');
+  await Promise.all(['members','items','notes'].map(reload));
+  subscribe();
+}
+db.auth.onAuthStateChange(ev=>{
+  if(ev==='SIGNED_OUT'){if(chan)db.removeChannel(chan);chan=null;S={members:[],items:[],notes:[]};show('login')}
+  else if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')setTimeout(enter,0);
+});
+$('#lf').onsubmit=async e=>{
+  e.preventDefault();$('#lerr').textContent='';
+  const{error}=await db.auth.signInWithPassword({email:$('#em').value.trim(),password:$('#pw').value});
+  if(error)$('#lerr').textContent='אימייל או סיסמה שגויים';
+};
+document.querySelectorAll('.out').forEach(b=>b.onclick=()=>db.auth.signOut());
+
+/* ---- drawing the week ---- */
+function itemsOn(ds){
+  const wd=parse(ds).getDay();
+  return S.items.filter(i=>i.date===ds||(i.rec&&i.type==='event'&&i.date<ds&&parse(i.date).getDay()===wd))
+   .sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+}
+const wn=()=>S.notes.filter(n=>n.w===iso(wk));
+function render(){
+  const end=addD(wk,6);
+  $('#range').textContent=wk.getDate()+' '+MON[wk.getMonth()]+' – '+end.getDate()+' '+MON[end.getMonth()]+' '+end.getFullYear();
+  $('#legend').innerHTML=S.members.map(m=>`<span class="chip"><i class="dot" style="--c:${m.color}"></i>${esc(m.name)}</span>`).join('')+'<button id="mgr">👪 ניהול</button>'+(S.members.length?'':'<span class="sub">התחילו בהוספת בני משפחה</span>');
+  $('#mgr').onclick=()=>{drawMembers();$('#ovM').classList.add('on')};
+  const td=iso(new Date());let h='';
+  for(let i=0;i<7;i++){
+    const dt=addD(wk,i),ds=iso(dt);
+    h+=`<div class="day${ds===td?' today':''}"><div class="dh"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small></div><div class="db" data-d="${ds}">`;
+    h+=itemsOn(ds).map(it=>{const c=mem(it.m).color;
+      if(it.type==='task'){const dn=it.done;return `<div class="it task${dn?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${dn?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`}
+      return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${it.time}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">🔁</span>':''}</div>`}).join('');
+    h+=`</div><button class="add" data-d="${ds}">+</button></div>`;
+  }
+  $('#grid').innerHTML=h;
+  $('#notes').innerHTML=wn().map((n,i)=>`<li><span>• ${esc(n.text)}</span><button data-n="${i}" style="padding:0 8px">✕</button></li>`).join('')||'<li>אין תזכורות השבוע 🎉</li>';
+}
+$('#grid').onclick=async e=>{
+  const ck=e.target.closest('.ck');
+  if(ck){const it=S.items.find(i=>i.id===ck.dataset.id);it.done=ck.checked;render();
+    const{error}=await db.from('items').update({done:ck.checked}).eq('id',it.id);if(error){fail(error);reload('items')}return}
+  const it=e.target.closest('.it');
+  if(it){openM(it.dataset.id);return}
+  const a=e.target.closest('[data-d]');
+  if(a)openM(null,a.dataset.d);
+};
+$('#notes').onclick=async e=>{const n=e.target.dataset.n;if(n==null)return;
+  const{error}=await db.from('week_notes').delete().eq('id',wn()[+n].id);if(error)return fail(error);reload('notes')};
+$('#noteAdd').onclick=async()=>{const v=$('#noteIn').value.trim();if(!v)return;
+  const{error}=await db.from('week_notes').insert({week_start:iso(wk),content:v});if(error)return fail(error);$('#noteIn').value='';reload('notes')};
+$('#prev').onclick=()=>{wk=addD(wk,-7);render()};
+$('#next').onclick=()=>{wk=addD(wk,7);render()};
+$('#today').onclick=()=>{wk=sow(new Date());render()};
+$('#addTop').onclick=()=>openM(null,iso(new Date()));
+
+/* ---- add / edit window ---- */
+function setType(t){type=t;$('#tyE').classList.toggle('on',t==='event');$('#tyT').classList.toggle('on',t==='task');
+  $('#fH').style.display=$('#lT').style.display=$('#lR').style.display=t==='event'?'':'none';}
+$('#tyE').onclick=()=>setType('event');$('#tyT').onclick=()=>setType('task');
+function openM(id,ds){
+  if(!S.members.length){alert('קודם הוסיפו לפחות בן משפחה אחד (כפתור "ניהול")');return}
+  editId=id;const it=id?S.items.find(i=>i.id===id):null;
+  $('#mt').textContent=it?'עריכה':'הוספה';
+  $('#fM').innerHTML=S.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  setType(it?it.type:'event');
+  $('#fT').value=it?it.title:'';$('#fD').value=it?it.date:ds;$('#fH').value=it&&it.time||'';
+  $('#fM').value=it&&it.m?it.m:S.members[0].id;$('#fR').checked=!!(it&&it.rec);
+  $('#del').style.display=it?'':'none';$('#ov').classList.add('on');$('#fT').focus();
+}
+const closeM=()=>$('#ov').classList.remove('on');
+$('#cx').onclick=closeM;
+$('#sv').onclick=async()=>{
+  const title=$('#fT').value.trim();if(!title||!$('#fD').value){$('#fT').focus();return}
+  const isE=type==='event',row={type,title,item_date:$('#fD').value,member_id:$('#fM').value,
+    item_time:isE&&$('#fH').value?$('#fH').value:null,recurring:isE&&$('#fR').checked};
+  const{error}=editId?await db.from('items').update(row).eq('id',editId):await db.from('items').insert(row);
+  if(error)return fail(error);
+  closeM();reload('items');
+};
+$('#del').onclick=async()=>{if(!confirm('למחוק? (באירוע חוזר, יימחקו כל החזרות)'))return;
+  const{error}=await db.from('items').delete().eq('id',editId);if(error)return fail(error);closeM();reload('items')};
+
+/* ---- family members ---- */
+function drawMembers(){$('#mList').innerHTML=S.members.map(m=>`<div class="chip" style="margin:3px"><i class="dot" style="--c:${m.color}"></i>${esc(m.name)} <button data-md="${m.id}" style="padding:0 6px">✕</button></div>`).join('')}
+$('#mList').onclick=async e=>{const id=e.target.dataset.md;if(!id||!confirm('להסיר את בן המשפחה? האירועים שלו יישארו בלי צבע.'))return;
+  const{error}=await db.from('members').delete().eq('id',id);if(error)return fail(error);await reload('members');reload('items');drawMembers()};
+$('#mAdd').onclick=async()=>{const n=$('#mN').value.trim();if(!n)return;
+  const{error}=await db.from('members').insert({name:n,color:$('#mC').value});if(error)return fail(error);$('#mN').value='';await reload('members');drawMembers()};
+$('#mX').onclick=()=>$('#ovM').classList.remove('on');
+</script>
+</body>
+</html>
