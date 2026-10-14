@@ -52,6 +52,8 @@ input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--l
 .err{color:#c0392b;min-height:1.3em;font-size:.9rem}
 .hid{display:none!important}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.day{min-height:0}}
+#urgentTop{background:#c95420;color:#fff;border:2px solid #ac4317;font-weight:800;box-shadow:0 2px 5px #0002}#urgentTop:focus-visible{outline:3px solid var(--ink)}
+.urgent-banner{margin:0 16px 12px;padding:12px 14px;border:2px solid var(--acc);border-radius:12px;background:var(--card)}.urgent-banner h2{margin:0 0 8px;font-size:1.1rem}.urgent-banner-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:7px 0}.urgent-banner-row span{overflow-wrap:anywhere;flex:1;font-weight:600}.urgent-banner-row button{white-space:nowrap}.urgent-error{color:#c0392b;font-size:.9rem;min-height:1.3em;margin:6px 0}
 .urgent-list{margin:12px 0;display:grid;gap:8px}.urgent-row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}.urgent-row span{flex:1;overflow-wrap:anywhere}.urgent-row button{white-space:nowrap}.urgent-tip{font-size:.82rem;color:var(--mute)}
 </style>
 </head>
@@ -72,6 +74,7 @@ input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--l
   <div><h1>היומן המשפחתי <span>שלנו</span></h1><div class="sub" id="range"></div></div>
   <div class="nav"><button id="next" aria-label="שבוע הבא">→</button><button id="today">היום</button><button id="prev" aria-label="שבוע קודם">←</button><button id="urgentTop">! הודעה דחופה</button><button class="p" id="addTop">+ הוספה</button><button class="out">יציאה</button></div>
 </header>
+<section id="urgentBanner" class="urgent-banner hid" aria-live="polite"></section>
 <div class="legend" id="legend"></div>
 <main><div class="grid" id="grid"></div>
 <section class="notes"><h2>📌 חשוב לזכור השבוע</h2><ul id="notes"></ul>
@@ -98,7 +101,7 @@ input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--l
 <div class="ov" id="ovUrgent"><div class="md">
 <h3>הודעות דחופות</h3><p class="urgent-tip">הודעות אלה מופיעות בתחתית מסך התצוגה עד שמסמנים אותן כבוצעו.</p>
 <div id="urgentList" class="urgent-list"></div>
-<label for="urgentInput">הודעה חדשה</label><input id="urgentInput" maxlength="240" placeholder="מה חשוב לא לשכוח?">
+<label for="urgentInput">הודעה חדשה</label><input id="urgentInput" maxlength="240" placeholder="מה חשוב לא לשכוח?"><div id="urgentError" class="urgent-error" role="alert"></div>
 <div class="foot"><button class="p" id="urgentAdd">הוספת הודעה</button><button id="urgentClose">סגירה</button></div>
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
@@ -164,18 +167,35 @@ document.querySelectorAll('.out').forEach(b=>b.onclick=()=>db.auth.signOut());
 function drawUrgent(){
  const active=(S.urgent||[]).filter(m=>!m.done);
  $('#urgentList').innerHTML=active.length?active.map(m=>`<div class="urgent-row"><span>${esc(m.content)}</span><button class="urgentDone" data-id="${m.id}">✓ בוצע</button></div>`).join(''):'<p class="sub">אין הודעות דחופות פעילות.</p>';
+ $('#urgentBanner').classList.toggle('hid',!active.length);
+ $('#urgentBanner').innerHTML=active.length?`<h2>❗ הודעות דחופות (${active.length})</h2>`+active.map(m=>`<div class="urgent-banner-row"><span>${esc(m.content)}</span><button class="urgentDone" data-id="${m.id}">✓ בוצע</button></div>`).join(''):'';
+ $('#urgentTop').textContent=active.length?`! הודעה דחופה (${active.length})`:'! הודעה דחופה';
 }
-$('#urgentTop').onclick=()=>{drawUrgent();$('#ovUrgent').classList.add('on')};
+$('#urgentTop').onclick=()=>{$('#urgentError').textContent='';drawUrgent();$('#ovUrgent').classList.add('on')};
 $('#urgentClose').onclick=()=>$('#ovUrgent').classList.remove('on');
 $('#urgentAdd').onclick=async()=>{
- const content=$('#urgentInput').value.trim();if(!content)return;
- const btn=$('#urgentAdd');btn.disabled=true;
- try{const {error}=await db.from('urgent_messages').insert({content});if(error)throw error;$('#urgentInput').value='';await reload('urgent');}catch(e){fail(e)}finally{btn.disabled=false}
+ const content=$('#urgentInput').value.trim();if(!content){$('#urgentError').textContent='יש להקליד הודעה';return}
+ const btn=$('#urgentAdd');btn.disabled=true;$('#urgentError').textContent='';
+ try{
+  const {error}=await db.from('urgent_messages').insert({content});if(error)throw error;
+  $('#urgentInput').value='';
+  $('#ovUrgent').classList.remove('on');
+  await reload('urgent');
+ }catch(e){$('#urgentError').textContent='לא הצלחנו לשמור את ההודעה. '+(e.message||'בדקו את החיבור ונסו שוב');}
+ finally{btn.disabled=false}
 };
-$('#urgentList').onclick=async e=>{
- const b=e.target.closest('.urgentDone');if(!b)return;b.disabled=true;
- try{const {error}=await db.from('urgent_messages').update({is_done:true,completed_at:new Date().toISOString()}).eq('id',b.dataset.id);if(error)throw error;await reload('urgent');}catch(err){fail(err);b.disabled=false}
-};
+async function completeUrgent(b){
+ if(!b)return; b.disabled=true;
+ const id=b.dataset.id;
+ try{
+  const {error}=await db.from('urgent_messages').update({is_done:true,completed_at:new Date().toISOString()}).eq('id',id);
+  if(error)throw error;
+  S.urgent=S.urgent.map(m=>m.id===id?{...m,done:true}:m);
+  drawUrgent();await reload('urgent');
+ }catch(e){fail(e);b.disabled=false}
+}
+$('#urgentList').onclick=e=>completeUrgent(e.target.closest('.urgentDone'));
+$('#urgentBanner').onclick=e=>completeUrgent(e.target.closest('.urgentDone'));
 // Periodic refresh also works if realtime is unavailable.
 setInterval(()=>{if(!$('#app').classList.contains('hid'))reload('urgent')},60000);
 
