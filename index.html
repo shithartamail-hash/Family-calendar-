@@ -33,6 +33,7 @@ main{padding:0 12px 12px}
 .it.done .x{text-decoration:line-through;opacity:.55}
 .rec{font-size:.75rem;color:var(--mute)}
 .add{margin:0 6px 6px;border-style:dashed;color:var(--mute);padding:4px}
+.reward-controls{display:flex;gap:8px;align-items:center;justify-content:space-between;padding:7px 10px;border-top:1px solid var(--line);font-size:.85rem}.reward-controls button{flex:1;padding:7px 4px;font-size:.85rem}.reward-controls button.earned{background:var(--today);border-color:var(--acc);font-weight:700}.reward-controls button:disabled{opacity:.45}
 .notes{margin-top:12px;background:#fff3c4;color:#4a3d10;border-radius:14px;padding:12px 16px;box-shadow:var(--shadow)}
 .notes h2{margin:0 0 8px;font-size:1.1rem}
 .notes li{display:flex;justify-content:space-between;gap:8px;padding:3px 0}
@@ -108,14 +109,14 @@ const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
 const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const sow=d=>addD(d,-d.getDay());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let wk=sow(new Date()),editId=null,type='event',S={members:[],items:[],notes:[]},chan=null;
+let wk=sow(new Date()),editId=null,type='event',S={members:[],items:[],notes:[],rewards:[]},chan=null;
 const fail=e=>alert('משהו השתבש: '+(e.message||e));
 const mem=id=>S.members.find(m=>m.id===id)||{name:'?',color:'#999'};
 const show=x=>['login','denied','app'].forEach(k=>$('#'+k).classList.toggle('hid',k!==x));
 
 /* ---- loading data from the database ---- */
 async function reload(t){
-  const{data,error}=await db.from(t==='notes'?'week_notes':t).select('*').order('created_at');
+  const{data,error}=await db.from(t==='notes'?'week_notes':t==='rewards'?'daily_rewards':t).select('*').order('created_at');
   if(error)return fail(error);
   if(t==='members')S.members=data.map(r=>({id:r.id,name:r.name,color:r.color}));
   else if(t==='items')S.items=data.map(r=>({id:r.id,type:r.type,title:r.title,date:r.item_date,time:(r.item_time||'').slice(0,5),m:r.member_id,rec:r.recurring,done:r.done}));
@@ -125,7 +126,7 @@ async function reload(t){
 function subscribe(){
   if(chan)db.removeChannel(chan);
   chan=db.channel('family');
-  [['members','members'],['items','items'],['week_notes','notes']].forEach(([tb,k])=>
+  [['members','members'],['items','items'],['week_notes','notes'],['daily_rewards','rewards']].forEach(([tb,k])=>
     chan.on('postgres_changes',{event:'*',schema:'public',table:tb},()=>reload(k)));
   chan.subscribe();
 }
@@ -137,11 +138,11 @@ async function enter(){
   const{data,error}=await db.from('family_access').select('user_id').maybeSingle();
   if(error||!data)return show('denied');
   show('app');
-  await Promise.all(['members','items','notes'].map(reload));
+  await Promise.all(['members','items','notes','rewards'].map(reload));
   subscribe();
 }
 db.auth.onAuthStateChange(ev=>{
-  if(ev==='SIGNED_OUT'){if(chan)db.removeChannel(chan);chan=null;S={members:[],items:[],notes:[]};show('login')}
+  if(ev==='SIGNED_OUT'){if(chan)db.removeChannel(chan);chan=null;S={members:[],items:[],notes:[],rewards:[]};show('login')}
   else if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')setTimeout(enter,0);
 });
 $('#lf').onsubmit=async e=>{
@@ -170,7 +171,9 @@ function render(){
     h+=itemsOn(ds).map(it=>{const c=mem(it.m).color;
       if(it.type==='task'){const dn=it.done;return `<div class="it task${dn?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${dn?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`}
       return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${it.time}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">🔁</span>':''}</div>`}).join('');
-    h+=`</div><button class="add" data-d="${ds}">+</button></div>`;
+    const hasHeart=S.rewards.some(r=>r.date===ds&&r.child==='tamara');
+    const hasCrown=S.rewards.some(r=>r.date===ds&&r.child==='yehonatan');
+    h+=`</div><button class="add" data-d="${ds}">+</button><div class="reward-controls"><button class="rw${hasHeart?' earned':''}" data-day="${ds}" data-child="tamara" aria-pressed="${hasHeart}">♥ תמרה</button><button class="rw${hasCrown?' earned':''}" data-day="${ds}" data-child="yehonatan" aria-pressed="${hasCrown}">♛ יהונתן</button></div></div>`;
   }
   $('#grid').innerHTML=h;
   $('#notes').innerHTML=wn().map((n,i)=>`<li><span>• ${esc(n.text)}</span><button data-n="${i}" style="padding:0 8px">✕</button></li>`).join('')||'<li>אין תזכורות השבוע 🎉</li>';
