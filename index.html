@@ -120,6 +120,7 @@ async function reload(t){
   if(error)return fail(error);
   if(t==='members')S.members=data.map(r=>({id:r.id,name:r.name,color:r.color}));
   else if(t==='items')S.items=data.map(r=>({id:r.id,type:r.type,title:r.title,date:r.item_date,time:(r.item_time||'').slice(0,5),m:r.member_id,rec:r.recurring,done:r.done}));
+  else if(t==='rewards')S.rewards=data.map(r=>({id:r.id,date:r.reward_date,child:r.child}));
   else S.notes=data.map(r=>({id:r.id,w:r.week_start,text:r.content}));
   render();
 }
@@ -179,6 +180,19 @@ function render(){
   $('#notes').innerHTML=wn().map((n,i)=>`<li><span>• ${esc(n.text)}</span><button data-n="${i}" style="padding:0 8px">✕</button></li>`).join('')||'<li>אין תזכורות השבוע 🎉</li>';
 }
 $('#grid').onclick=async e=>{
+  const rewardButton=e.target.closest('.rw');
+  if(rewardButton){
+    const ds=rewardButton.dataset.day, child=rewardButton.dataset.child;
+    if(!['tamara','yehonatan'].includes(child)||!/^\d{4}-\d{2}-\d{2}$/.test(ds))return;
+    rewardButton.disabled=true;
+    const existing=S.rewards.find(r=>r.date===ds&&r.child===child);
+    const {error}=existing
+      ?await db.from('daily_rewards').delete().eq('id',existing.id)
+      :await db.from('daily_rewards').insert({reward_date:ds,child});
+    if(error)fail(error);
+    await reload('rewards');
+    return;
+  }
   const ck=e.target.closest('.ck');
   if(ck){const it=S.items.find(i=>i.id===ck.dataset.id);it.done=ck.checked;render();
     const{error}=await db.from('items').update({done:ck.checked}).eq('id',it.id);if(error){fail(error);reload('items')}return}
