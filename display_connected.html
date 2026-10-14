@@ -1,0 +1,89 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>הלוח המשפחתי – תצוגת E-Ink</title>
+<style>
+:root{color-scheme:light;--ink:#242424;--muted:#666;--line:#d8d5ce;--paper:#fcfbf7;--soft:#f3f1eb}*{box-sizing:border-box}body{margin:0;background:#e9e8e4;color:var(--ink);font-family:Arial,'Noto Sans Hebrew',sans-serif}button{font:inherit;cursor:pointer;background:transparent;color:inherit;border:1px solid #c9c6bf;border-radius:8px;padding:8px 13px}button.active{background:#292929;color:white}.screen{width:min(100%,1600px);min-height:800px;margin:18px auto;background:var(--paper);padding:28px 34px;box-shadow:0 5px 24px #0001;display:flex;flex-direction:column;gap:18px}.top{display:grid;grid-template-columns:minmax(260px,1.5fr) minmax(220px,1fr) minmax(210px,1fr) auto;align-items:center;gap:25px;padding-bottom:18px;border-bottom:1px solid var(--line)}h1{font-size:clamp(26px,2.7vw,42px);margin:0 0 8px;font-weight:700;letter-spacing:-.04em}.range{color:var(--muted);font-size:19px}.smallheading{font-size:15px;font-weight:700;margin-bottom:8px}.joke{font-size:17px;line-height:1.6}.weather{display:flex;gap:12px;align-items:center}.weather .symbol{font-size:39px}.weather strong{font-size:29px}.weather p{margin:2px 0;font-size:15px}.controls{display:flex;flex-direction:column;gap:8px;align-items:flex-start}.controls .line{display:flex;gap:6px}.controls button{white-space:nowrap}.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));flex:1;min-height:520px}.day{min-width:0;border-left:1px solid var(--line);padding:0 12px;display:flex;flex-direction:column}.day:last-child{border-left:0}.day.today{background:#f3f0e9}.dayhead{padding:7px 0 17px;border-bottom:1px solid var(--line);margin-bottom:12px}.dayhead .name{font-size:24px;font-weight:700}.dayhead .date{font-size:17px;color:#555;margin-top:5px}.events{flex:1}.event{padding:12px 0;border-bottom:1px solid #e6e3dd;text-align:right;line-height:1.4;overflow-wrap:anywhere}.event .time{font-size:14px;color:#666;margin-bottom:5px}.event .title{font-size:18px;font-weight:600}.event .people{font-size:13px;color:#666;margin-top:5px}.rewards{border-top:1px dashed #bcb8b0;padding-top:12px;display:grid;gap:9px}.reward{display:flex;justify-content:space-between;align-items:center;font-size:15px}.reward .symbol{font-size:25px;font-weight:700}.shabbat{border:1px solid #aaa;padding:9px;margin-top:12px;font-size:14px;line-height:1.6}.alert{border:2px solid #222;padding:14px 18px;font-size:20px;font-weight:700;display:flex;gap:12px}.alert[hidden]{display:none}.month{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));grid-auto-rows:minmax(90px,1fr);flex:1;gap:0;border-top:1px solid var(--line);border-right:1px solid var(--line)}.monthcell{border-left:1px solid var(--line);border-bottom:1px solid var(--line);padding:10px;min-width:0}.monthcell strong{font-size:18px}.monthcell p{font-size:13px;margin:6px 0}.monthcell.outside{color:#aaa;background:#f8f7f4}.monthcell.today{background:#f1eee7}.foot{color:#777;font-size:12px;text-align:left}.notice{font-size:12px;color:#777}[hidden]{display:none!important}.login{max-width:450px;margin:auto;padding:32px;border:1px solid var(--line);border-radius:12px;background:var(--paper);text-align:center}.login input{display:block;width:100%;font:inherit;padding:12px;margin:12px 0;direction:ltr;text-align:left;border:1px solid #aaa;border-radius:7px}.login button{width:100%;background:#292929;color:white}.status{font-size:14px;color:#555}.authbar{display:flex;align-items:center;gap:8px;justify-content:flex-end}.authbar button{font-size:12px;padding:4px 8px}.error{color:#a02d2d;min-height:1.4em}.screen{min-height:calc(100vh - 36px)}@media(max-width:850px){.screen{width:1450px;margin:0;padding:25px}.top{grid-template-columns:1.4fr 1fr 1fr auto}body{overflow-x:auto}}
+</style></head>
+<body><section id="login" class="login" hidden><h1>היומן המשפחתי שלנו</h1><p>התחברות חד־פעמית למסך התצוגה</p><form id="loginForm"><input type="email" id="email" placeholder="אימייל" autocomplete="username" required><input type="password" id="password" placeholder="סיסמה" autocomplete="current-password" required><p class="error" id="loginError"></p><button type="submit">התחברות</button></form></section><section id="denied" class="login" hidden><h1>אין הרשאה</h1><p>המשתמש אינו מורשה לצפות ביומן המשפחתי.</p><button id="deniedLogout">יציאה</button></section><main class="screen" id="screen" hidden><header class="top"><div><h1>היומן המשפחתי שלנו</h1><div class="range" id="range"></div></div><section><div class="smallheading">הבדיחה היומית</div><div class="joke" id="joke"></div></section><section><div class="weather"><div class="symbol">○</div><div><strong>—°</strong><p>מזג אוויר יתחבר בהמשך</p><p>המלצת לבוש תופיע כאן</p></div></div></section><nav class="controls"><div class="line"><button id="prev" aria-label="הקודם">→</button><button id="today">היום</button><button id="next" aria-label="הבא">←</button></div><div class="line"><button id="week" class="active">שבוע</button><button id="month">חודש</button></div></nav></header><div class="week" id="weekGrid"></div><div class="month" id="monthGrid" hidden></div><section class="alert" id="alert" hidden><span>! חשוב</span><span id="alertText"></span></section><footer class="foot"><div class="authbar"><span id="syncStatus" class="status">מתחבר…</span><button id="logout">יציאה</button></div><span>מזג האוויר וזמני השבת יחוברו בהמשך · לבבות וכתרים יחוברו בשלב הבא</span></footer></main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script>
+// Public client configuration. Access is protected by Supabase Auth and database RLS.
+const SB_URL='https://pkghylgchdnykgamahjh.supabase.co';
+const SB_KEY='sb_publishable_TlZtdKg6YXzgggxFpBbPhQ_FghbB3Ap';
+const db=supabase.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+const $=id=>document.getElementById(id);
+const names=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const months=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
+const jokes=['למה הדג לא אוהב מחשבים? כי הוא מפחד מהרשת!','מה אמר העיפרון למחק? טוב שאתה כאן כשאני טועה!','למה העגבנייה הסמיקה? כי היא ראתה את הסלט!','למה הספר הגיע עם מטרייה? כי צפו לו הרבה טיפות דיו!'];
+const add=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const start=d=>add(d,-d.getDay());
+const same=(a,b)=>a.toDateString()===b.toDateString();
+const fmt=d=>`${d.getDate()}.${String(d.getMonth()+1).padStart(2,'0')}`;
+const iso=d=>`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+const parse=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)};
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+let anchor=new Date(),mode='week',state={members:[],items:[]},channel=null,active=false,busy=false;
+function show(view){$('login').hidden=view!=='login';$('denied').hidden=view!=='denied';$('screen').hidden=view!=='screen'}
+function status(message){$('syncStatus').textContent=message}
+function stopUpdates(){active=false;if(channel){db.removeChannel(channel);channel=null}state={members:[],items:[]}}
+async function load(){
+ if(!active||busy)return;
+ busy=true;
+ try{
+  const [m,i]=await Promise.all([db.from('members').select('id,name,color'),db.from('items').select('id,type,title,item_date,item_time,member_id,recurring,done')]);
+  if(m.error)throw m.error;if(i.error)throw i.error;
+  if(!active)return;
+  state.members=m.data||[];state.items=i.data||[];
+  draw();status('עודכן: '+new Date().toLocaleTimeString('he-IL',{hour:'2-digit',minute:'2-digit'}));
+ }catch(e){status('אין חיבור לנתונים · מנסה שוב');console.error('Sync error',e)}
+ finally{busy=false}
+}
+function setupRealtime(){
+ if(channel)db.removeChannel(channel);
+ channel=db.channel('family-display-'+Math.random().toString(36).slice(2));
+ for(const t of ['items','members'])channel.on('postgres_changes',{event:'*',schema:'public',table:t},()=>load());
+ channel.subscribe(s=>{if(s==='SUBSCRIBED')load();});
+}
+async function enter(){
+ const {data:{session},error}=await db.auth.getSession();
+ if(error||!session){stopUpdates();show('login');return}
+ const access=await db.from('family_access').select('user_id').eq('user_id',session.user.id).maybeSingle();
+ if(access.error||!access.data){stopUpdates();show('denied');return}
+ active=true;show('screen');await load();setupRealtime();
+}
+db.auth.onAuthStateChange((event)=>{if(event==='SIGNED_OUT'){stopUpdates();show('login')}else if(event==='SIGNED_IN'||event==='INITIAL_SESSION'||event==='TOKEN_REFRESHED'){setTimeout(enter,0)}});
+$('loginForm').onsubmit=async e=>{e.preventDefault();$('loginError').textContent='';
+ const {error}=await db.auth.signInWithPassword({email:$('email').value.trim(),password:$('password').value});
+ if(error)$('loginError').textContent='ההתחברות נכשלה. בדקו את האימייל והסיסמה.';
+ else{$('password').value='';await enter()}
+};
+$('logout').onclick=$('deniedLogout').onclick=()=>db.auth.signOut();
+function eventsOn(date){const wd=parse(date).getDay();return state.items.filter(i=>i.item_date===date||(i.recurring&&i.type==='event'&&i.item_date<date&&parse(i.item_date).getDay()===wd)).sort((a,b)=>(a.item_time||'').localeCompare(b.item_time||''))}
+function eventHtml(e){
+ const member=state.members.find(m=>m.id===e.member_id);
+ const time=(e.item_time||'').slice(0,5);
+ return `<div class="event"><div class="time">${time?esc(time):'ללא שעה'}${e.type==='task'?' · משימה':''}</div><div class="title">${esc(e.title)}${e.done?' ✓':''}</div>${member?`<div class="people">${esc(member.name)}</div>`:''}</div>`;
+}
+function draw(){
+ const s=start(anchor),end=add(s,6),today=new Date();
+ $('range').textContent=mode==='week'?`${s.getDate()}–${end.getDate()} ${months[end.getMonth()]} ${end.getFullYear()}`:`${months[anchor.getMonth()]} ${anchor.getFullYear()}`;
+ $('joke').textContent=jokes[Math.floor((new Date().setHours(0,0,0,0))/86400000)%jokes.length];
+ $('week').classList.toggle('active',mode==='week');$('month').classList.toggle('active',mode==='month');
+ $('weekGrid').hidden=mode!=='week';$('monthGrid').hidden=mode!=='month';
+ if(mode==='week'){
+  $('weekGrid').innerHTML=names.map((name,i)=>{const d=add(s,i),ds=iso(d);return `<article class="day ${same(d,today)?'today':''}"><div class="dayhead"><div class="name">${name}</div><div class="date">${fmt(d)}</div></div><div class="events">${eventsOn(ds).map(eventHtml).join('')}</div><div class="rewards"><div class="reward"><span>תמרה</span><span class="symbol">—</span></div><div class="reward"><span>יהונתן</span><span class="symbol">—</span></div></div></article>`}).join('');
+ }else{
+  const first=new Date(anchor.getFullYear(),anchor.getMonth(),1),gridStart=start(first);
+  $('monthGrid').innerHTML=Array.from({length:42},(_,i)=>{const d=add(gridStart,i),inside=d.getMonth()===anchor.getMonth(),ev=inside?eventsOn(iso(d)):[];return `<div class="monthcell ${inside?'':'outside'} ${same(d,today)?'today':''}"><strong>${d.getDate()}</strong>${ev.slice(0,3).map(e=>`<p>${esc(e.title)}</p>`).join('')}${ev.length>3?`<p>ועוד ${ev.length-3} אירועים</p>`:''}</div>`}).join('');
+ }
+}
+$('prev').onclick=()=>{anchor=mode==='week'?add(anchor,-7):new Date(anchor.getFullYear(),anchor.getMonth()-1,1);draw()};
+$('next').onclick=()=>{anchor=mode==='week'?add(anchor,7):new Date(anchor.getFullYear(),anchor.getMonth()+1,1);draw()};
+$('today').onclick=()=>{anchor=new Date();draw()};
+$('week').onclick=()=>{mode='week';draw()};
+$('month').onclick=()=>{mode='month';draw()};
+// Polling fallback for e-ink browsers where realtime may be suspended.
+setInterval(()=>{if(active)load()},60000);
+setInterval(()=>{if(active){draw();if(!channel)setupRealtime()}},300000);
+enter();
+</script></body></html>
