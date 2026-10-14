@@ -52,6 +52,7 @@ input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--l
 .err{color:#c0392b;min-height:1.3em;font-size:.9rem}
 .hid{display:none!important}
 @media (max-width:900px){.grid{grid-template-columns:1fr}.day{min-height:0}}
+.urgent-list{margin:12px 0;display:grid;gap:8px}.urgent-row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}.urgent-row span{flex:1;overflow-wrap:anywhere}.urgent-row button{white-space:nowrap}.urgent-tip{font-size:.82rem;color:var(--mute)}
 </style>
 </head>
 <body>
@@ -69,7 +70,7 @@ input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--l
 <div id="app" class="hid">
 <header>
   <div><h1>היומן המשפחתי <span>שלנו</span></h1><div class="sub" id="range"></div></div>
-  <div class="nav"><button id="next" aria-label="שבוע הבא">→</button><button id="today">היום</button><button id="prev" aria-label="שבוע קודם">←</button><button class="p" id="addTop">+ הוספה</button><button class="out">יציאה</button></div>
+  <div class="nav"><button id="next" aria-label="שבוע הבא">→</button><button id="today">היום</button><button id="prev" aria-label="שבוע קודם">←</button><button id="urgentTop">! הודעה דחופה</button><button class="p" id="addTop">+ הוספה</button><button class="out">יציאה</button></div>
 </header>
 <div class="legend" id="legend"></div>
 <main><div class="grid" id="grid"></div>
@@ -94,6 +95,12 @@ input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--l
   <div class="foot"><button class="p" id="mAdd">הוספה</button><button id="mX">סגירה</button></div>
 </div></div>
 
+<div class="ov" id="ovUrgent"><div class="md">
+<h3>הודעות דחופות</h3><p class="urgent-tip">הודעות אלה מופיעות בתחתית מסך התצוגה עד שמסמנים אותן כבוצעו.</p>
+<div id="urgentList" class="urgent-list"></div>
+<label for="urgentInput">הודעה חדשה</label><input id="urgentInput" maxlength="240" placeholder="מה חשוב לא לשכוח?">
+<div class="foot"><button class="p" id="urgentAdd">הוספת הודעה</button><button id="urgentClose">סגירה</button></div>
+</div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 /* ---- Supabase settings (public values, safe to keep here; protection comes from login + RLS) ---- */
@@ -109,25 +116,26 @@ const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
 const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const sow=d=>addD(d,-d.getDay());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let wk=sow(new Date()),editId=null,type='event',S={members:[],items:[],notes:[],rewards:[]},chan=null;
+let wk=sow(new Date()),editId=null,type='event',S={members:[],items:[],notes:[],rewards:[],urgent:[]},chan=null;
 const fail=e=>alert('משהו השתבש: '+(e.message||e));
 const mem=id=>S.members.find(m=>m.id===id)||{name:'?',color:'#999'};
 const show=x=>['login','denied','app'].forEach(k=>$('#'+k).classList.toggle('hid',k!==x));
 
 /* ---- loading data from the database ---- */
 async function reload(t){
-  const{data,error}=await db.from(t==='notes'?'week_notes':t==='rewards'?'daily_rewards':t).select('*').order('created_at');
+  const{data,error}=await db.from(t==='notes'?'week_notes':t==='rewards'?'daily_rewards':t==='urgent'?'urgent_messages':t).select('*').order('created_at');
   if(error)return fail(error);
   if(t==='members')S.members=data.map(r=>({id:r.id,name:r.name,color:r.color}));
   else if(t==='items')S.items=data.map(r=>({id:r.id,type:r.type,title:r.title,date:r.item_date,time:(r.item_time||'').slice(0,5),m:r.member_id,rec:r.recurring,done:r.done}));
   else if(t==='rewards')S.rewards=data.map(r=>({id:r.id,date:r.reward_date,child:r.child}));
+  else if(t==='urgent'){S.urgent=data.map(r=>({id:r.id,content:r.content,done:r.is_done}));drawUrgent();}
   else S.notes=data.map(r=>({id:r.id,w:r.week_start,text:r.content}));
   render();
 }
 function subscribe(){
   if(chan)db.removeChannel(chan);
   chan=db.channel('family');
-  [['members','members'],['items','items'],['week_notes','notes'],['daily_rewards','rewards']].forEach(([tb,k])=>
+  [['members','members'],['items','items'],['week_notes','notes'],['daily_rewards','rewards'],['urgent_messages','urgent']].forEach(([tb,k])=>
     chan.on('postgres_changes',{event:'*',schema:'public',table:tb},()=>reload(k)));
   chan.subscribe();
 }
@@ -139,11 +147,11 @@ async function enter(){
   const{data,error}=await db.from('family_access').select('user_id').maybeSingle();
   if(error||!data)return show('denied');
   show('app');
-  await Promise.all(['members','items','notes','rewards'].map(reload));
+  await Promise.all(['members','items','notes','rewards','urgent'].map(reload));
   subscribe();
 }
 db.auth.onAuthStateChange(ev=>{
-  if(ev==='SIGNED_OUT'){if(chan)db.removeChannel(chan);chan=null;S={members:[],items:[],notes:[],rewards:[]};show('login')}
+  if(ev==='SIGNED_OUT'){if(chan)db.removeChannel(chan);chan=null;S={members:[],items:[],notes:[],rewards:[],urgent:[]};show('login')}
   else if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')setTimeout(enter,0);
 });
 $('#lf').onsubmit=async e=>{
@@ -152,6 +160,25 @@ $('#lf').onsubmit=async e=>{
   if(error)$('#lerr').textContent='אימייל או סיסמה שגויים';
 };
 document.querySelectorAll('.out').forEach(b=>b.onclick=()=>db.auth.signOut());
+/* ---- urgent notices ---- */
+function drawUrgent(){
+ const active=(S.urgent||[]).filter(m=>!m.done);
+ $('#urgentList').innerHTML=active.length?active.map(m=>`<div class="urgent-row"><span>${esc(m.content)}</span><button class="urgentDone" data-id="${m.id}">✓ בוצע</button></div>`).join(''):'<p class="sub">אין הודעות דחופות פעילות.</p>';
+}
+$('#urgentTop').onclick=()=>{drawUrgent();$('#ovUrgent').classList.add('on')};
+$('#urgentClose').onclick=()=>$('#ovUrgent').classList.remove('on');
+$('#urgentAdd').onclick=async()=>{
+ const content=$('#urgentInput').value.trim();if(!content)return;
+ const btn=$('#urgentAdd');btn.disabled=true;
+ try{const {error}=await db.from('urgent_messages').insert({content});if(error)throw error;$('#urgentInput').value='';await reload('urgent');}catch(e){fail(e)}finally{btn.disabled=false}
+};
+$('#urgentList').onclick=async e=>{
+ const b=e.target.closest('.urgentDone');if(!b)return;b.disabled=true;
+ try{const {error}=await db.from('urgent_messages').update({is_done:true,completed_at:new Date().toISOString()}).eq('id',b.dataset.id);if(error)throw error;await reload('urgent');}catch(err){fail(err);b.disabled=false}
+};
+// Periodic refresh also works if realtime is unavailable.
+setInterval(()=>{if(!$('#app').classList.contains('hid'))reload('urgent')},60000);
+
 
 /* ---- drawing the week ---- */
 function itemsOn(ds){
