@@ -100,6 +100,35 @@ html,body{width:100%;max-width:100%;overflow-x:clip}
 .family-option input{width:19px!important;height:19px;margin:0;accent-color:var(--acc)}
 .family-option .dot{flex:none;width:8px;height:8px}
 @media(max-width:430px){.brand-row{gap:8px}.tools{justify-content:space-between;flex-wrap:wrap;gap:5px}.tools button{font-size:13px;padding:7px 9px}.toolbar{gap:6px}}
+/* Tasks are checkable directly in the collapsed day row. */
+.day-toggle{cursor:pointer;box-sizing:border-box}
+.day-toggle:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.preview-row .compact-ck{appearance:auto;-webkit-appearance:checkbox;flex:none;width:16px!important;height:16px!important;min-width:16px;margin:0;accent-color:var(--acc);cursor:pointer}
+.preview-row.completed-task .name{color:var(--mute);text-decoration:line-through;opacity:.75}
+.preview-row .event-dots{min-width:16px;justify-content:center}
+
+/* Compact, evenly aligned actions: no scattered header controls */
+header{gap:10px}
+.brand-row{justify-content:flex-start;flex-wrap:nowrap}
+.tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));width:100%;gap:8px;direction:rtl}
+.tools button{width:100%;min-width:0;min-height:42px;padding:8px 5px;font-size:13px;font-weight:600;display:flex;justify-content:center;align-items:center;gap:5px;white-space:nowrap;line-height:1.2}
+.tools #urgentTop{background:var(--urgent);color:var(--ink);border:1px solid var(--acc)}
+.tool-label{font-size:13px}
+@media(max-width:360px){.tools{gap:5px}.tools button{font-size:12px;padding-inline:3px}.tool-label{font-size:12px}}
+.daily-tip{border-top:1px solid var(--line);margin-top:20px;padding:13px 2px 0;max-width:100%}
+.daily-tip .tip-heading{font-size:11px;color:var(--acc);font-weight:700}
+.daily-tip p{font-size:13px;color:var(--ink);line-height:1.65;margin:5px 0 4px}
+.daily-tip .tip-category{font-size:11px;color:var(--mute)}
+
+/* Header refinement: secondary theme switch in top-left, two primary actions */
+.brand-row{display:flex;justify-content:space-between;align-items:center;flex-wrap:nowrap;gap:12px;direction:rtl}
+.brand-row .theme-corner{flex:0 0 auto;display:inline-flex;align-items:center;justify-content:center;width:40px;min-width:40px;height:34px;min-height:34px;padding:0;border:1px solid var(--line);border-radius:999px;background:var(--soft);font-size:19px;line-height:1;color:var(--ink);font-weight:400}
+.tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;direction:rtl;width:100%}
+.tools button{font-size:14px;font-weight:600;min-height:43px;padding:9px 10px;gap:6px}
+.tools #urgentTop{background:var(--urgent);color:var(--urgent-ink);border:1px solid var(--acc);display:flex;align-items:center;justify-content:center;flex-direction:row;direction:rtl}
+.tools #urgentTop .urgent-mark{font-weight:800;font-size:18px;line-height:1;color:var(--urgent-ink)}
+@media(max-width:430px){.brand-row{flex-wrap:nowrap}.tools{justify-content:stretch;gap:9px}.tools button{font-size:14px;padding:9px 7px}}
+@media(max-width:360px){.tools button{font-size:13px}.brand-row .theme-corner{width:36px;min-width:36px}}
 </style>
 </head>
 <body>
@@ -115,11 +144,11 @@ html,body{width:100%;max-width:100%;overflow-x:clip}
 </section>
 
 <div id="app" class="hid">
-<header><div class="brand-row"><div class="brand"><img src="./apple-touch-icon.png" alt="לוגו Sinai"><div><h1>Sinai</h1><div class="sub">היומן המשפחתי</div></div></div><div class="tools"><button id="themeToggle" aria-label="שינוי מצב תצוגה" title="בהיר, כהה או אוטומטי">☾</button><button id="urgentTop">הודעה דחופה !</button><button id="mgrTop">ניהול</button></div></div><div class="toolbar"><div class="weeknav"><button id="prev" aria-label="לתקופה הקודמת">→</button><button id="today">היום</button><button id="next" aria-label="לתקופה הבאה">←</button></div><div class="view-switch"><button id="modeWeek" class="active" aria-pressed="true">שבוע</button><button id="modeMonth" aria-pressed="false">חודש</button></div></div><div class="sub" id="range"></div></header>
+<header><div class="brand-row"><div class="brand"><img src="./apple-touch-icon.png" alt="לוגו Sinai"><div><h1>Sinai</h1><div class="sub">היומן המשפחתי</div></div></div><button id="themeToggle" class="theme-corner" type="button" aria-label="מעבר למצב כהה" title="מעבר למצב כהה">☀</button></div><div class="tools" aria-label="פעולות יומן"><button id="urgentTop" type="button"><span>הודעה דחופה</span><span class="urgent-mark" aria-hidden="true">!</span></button><button id="mgrTop" type="button">ניהול</button></div><div class="toolbar"><div class="weeknav"><button id="prev" aria-label="לתקופה הקודמת">→</button><button id="today">היום</button><button id="next" aria-label="לתקופה הבאה">←</button></div><div class="view-switch"><button id="modeWeek" class="active" aria-pressed="true">שבוע</button><button id="modeMonth" aria-pressed="false">חודש</button></div></div><div class="sub" id="range"></div></header>
 <section id="urgentBanner" class="urgent-banner hid" aria-live="polite"></section>
 <div class="legend" id="legend"></div>
 <main><div class="grid" id="grid"></div><div class="month-grid hid" id="monthGrid"></div><section class="month-detail hid" id="monthDetail"></section>
-<section class="notes"><h2>📌 חשוב לזכור השבוע</h2><ul id="notes"></ul>
+<aside id="dailyTip" class="daily-tip" aria-label="רגע קטן למחשבה"><div class="tip-heading">רגע קטן למחשבה</div><p id="tipText"></p><div class="tip-category" id="tipCategory"></div></aside><section class="notes"><h2>📌 חשוב לזכור השבוע</h2><ul id="notes"></ul>
 <div class="row"><input id="noteIn" placeholder="הוסיפו תזכורת…"><button id="noteAdd">הוספה</button></div></section></main><button id="addTop" class="fab" aria-label="הוספת אירוע או משימה">+</button>
 </div>
 
@@ -154,6 +183,40 @@ const SB_KEY='sb_publishable_TlZtdKg6YXzgggxFpBbPhQ_FghbB3Ap';
 const db=supabase.createClient(SB_URL,SB_KEY);
 
 const $=s=>document.querySelector(s);
+/* טיפ מיינדפולנס קצר, מתחלף כל ארבע שעות. */
+const SINAI_TIPS=[
+  {kind:'נשימה',text:'לפני שמתחילים דבר חדש, קחו שלוש נשימות רגועות ושימו לב לאוויר שנכנס ויוצא.'},
+  {kind:'נוכחות',text:'בחרו רגע אחד היום לעשות דבר אחד בלבד, בלי להסיח את הדעת.'},
+  {kind:'תשומת לב',text:'שימו לב לרגליים שנוגעות ברצפה. אפשר לחזור לרגע הזה בכל זמן.'},
+  {kind:'האטה',text:'לא כל הודעה דורשת תגובה מיידית. אפשר לעצור לרגע ולבחור מתי לענות.'},
+  {kind:'הקשבה',text:'בשיחה הבאה נסו להקשיב עד הסוף, לפני שאתם מתכננים מה לומר.'},
+  {kind:'חמלה עצמית',text:'כשמשהו לא מצליח, נסו לדבר לעצמכם באותה עדינות שבה הייתם מדברים לחבר.'},
+  {kind:'נשימה',text:'שימו לב לנשיפה אחת ארוכה ונינוחה. אין צורך לשנות שום דבר אחר.'},
+  {kind:'הכרת תודה',text:'חשבו על פרט קטן אחד מהיום שאתם שמחים שהיה שם.'},
+  {kind:'סקרנות',text:'נסו לשים לב לצליל אחד בסביבה שבדרך כלל עובר לידכם בלי שתבחינו בו.'},
+  {kind:'שחרור',text:'אם הראש מלא מחשבות, אפשר להבחין בהן בלי להצטרך לפתור את כולן עכשיו.'},
+  {kind:'נוכחות',text:'בזמן שתיית מים או קפה, עצרו לכמה שניות ושימו לב לטעם ולטמפרטורה.'},
+  {kind:'מנוחה',text:'גם דקה של עצירה באמצע היום היא רגע של קשב, לא זמן מבוזבז.'},
+  {kind:'תשומת לב',text:'שימו לב איך הגוף מרגיש כרגע. האם הכתפיים יכולות להשתחרר קצת?'},
+  {kind:'האטה',text:'לפני שעוברים למשימה הבאה, אפשר לעצור ולשאול: מה חשוב לי עכשיו?'},
+  {kind:'חמלה',text:'מותר להיות עייפים, חסרי סבלנות או לא מרוכזים. שימו לב לזה בלי לשפוט.'},
+  {kind:'הקשבה',text:'נסו לשים לב לרגע שבו מישהו בבית מחייך, גם אם הוא חולף במהירות.'},
+  {kind:'נשימה',text:'בפקק או בהמתנה, נסו לשים לב לשתי נשימות טבעיות במקום למהר למלא את השקט.'},
+  {kind:'נוכחות',text:'היום נסו לעשות פעולה יומיומית אחת קצת יותר לאט, ולשים לב לפרטים.'}
+];
+let lastTipSlot='';
+function updateDailyTip(){
+  const slot=Math.floor(Date.now()/14400000);
+  if(String(slot)===lastTipSlot)return;
+  lastTipSlot=String(slot);
+  const tip=SINAI_TIPS[((slot%SINAI_TIPS.length)+SINAI_TIPS.length)%SINAI_TIPS.length];
+  $('#tipText').textContent=tip.text;
+  $('#tipCategory').textContent=tip.kind;
+}
+updateDailyTip();
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateDailyTip()});
+setInterval(updateDailyTip,60000);
+
 const DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
 const MON=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -161,7 +224,7 @@ const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
 const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const sow=d=>addD(d,-d.getDay());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-let viewMode='week',openedDay=null,selectedMonthDay=iso(new Date()),themePref=localStorage.getItem('sinai-theme')||'auto';
+let viewMode='week',openedDay=null,selectedMonthDay=iso(new Date()),themePref=localStorage.getItem('sinai-theme')==='dark'?'dark':'light';
 let wk=sow(new Date()),editId=null,type='event',S={members:[],items:[],notes:[],rewards:[],urgent:[]},chan=null;
 const fail=e=>alert('משהו השתבש: '+(e.message||e));
 const mem=id=>S.members.find(m=>m.id===id)||{name:'ללא שיוך',color:'#999'};
@@ -214,7 +277,7 @@ function drawUrgent(){
  $('#urgentList').innerHTML=active.length?active.map(m=>`<div class="urgent-row"><span>${esc(m.content)}</span><button class="urgentDone" data-id="${m.id}">✓ בוצע</button></div>`).join(''):'<p class="sub">אין הודעות דחופות פעילות.</p>';
  $('#urgentBanner').classList.toggle('hid',!active.length);
  $('#urgentBanner').innerHTML=active.length?`<h2>❗ הודעות דחופות (${active.length})</h2>`+active.map(m=>`<div class="urgent-banner-row"><span>${esc(m.content)}</span><button class="urgentDone" data-id="${m.id}">✓ בוצע</button></div>`).join(''):'';
- $('#urgentTop').textContent=active.length?`הודעה דחופה (${active.length}) !`:'הודעה דחופה !';
+ $('#urgentTop').innerHTML=`<span>הודעה דחופה${active.length?` (${active.length})`:''}</span><span class="urgent-mark" aria-hidden="true">!</span>`;
 }
 $('#urgentTop').onclick=()=>{$('#urgentError').textContent='';drawUrgent();$('#ovUrgent').classList.add('on')};
 $('#urgentClose').onclick=()=>$('#ovUrgent').classList.remove('on');
@@ -249,7 +312,7 @@ setInterval(()=>{if(!$('#app').classList.contains('hid'))reload('urgent')},60000
 function itemsOn(ds){
   const wd=parse(ds).getDay();
   return S.items.filter(i=>i.date===ds||(i.rec&&i.type==='event'&&i.date<ds&&parse(i.date).getDay()===wd))
-   .sort((a,b)=>(a.time||'').localeCompare(b.time||''));
+   .sort((a,b)=>Number(a.type==='task'&&a.done)-Number(b.type==='task'&&b.done)||(a.time||'').localeCompare(b.time||''));
 }
 const wn=()=>S.notes.filter(n=>n.w===iso(wk));
 function render(){
@@ -265,8 +328,8 @@ function render(){
   let h='';
   for(let i=0;i<7;i++){
    const dt=addD(wk,i),ds=iso(dt),events=itemsOn(ds),isOpen=openedDay===ds;
-   const brief=events.slice(0,isOpen?100:2).map(it=>`<div class="preview-row"><span class="event-dots">${eventDots(it)}</span><span class="name">${esc(it.title)}${it.done?' ✓':''}</span>${it.time?`<span class="time">${esc(it.time)}</span>`:''}</div>`).join('') || '<span class="empty">אין אירועים</span>';
-   h+=`<section class="day${ds===today?' today':''}"><button class="day-toggle" data-open="${ds}" aria-expanded="${isOpen}"><span class="day-title"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small></span><span class="preview">${brief}${!isOpen&&events.length>2?`<span class="more">ועוד ${events.length-2} אירועים</span>`:''}</span><span class="toggle-arrow">${isOpen?'⌃':'⌄'}</span></button>`;
+   const brief=events.slice(0,isOpen?100:2).map(it=>`<div class="preview-row${it.type==='task'&&it.done?' completed-task':''}">${it.type==='task'?`<input type="checkbox" class="ck compact-ck" data-id="${it.id}" aria-label="סמן משימה: ${esc(it.title)}" ${it.done?'checked':''}>`:`<span class="event-dots">${eventDots(it)}</span>`}<span class="name">${esc(it.title)}</span>${it.time?`<span class="time">${esc(it.time)}</span>`:''}</div>`).join('') || '<span class="empty">אין אירועים</span>';
+   h+=`<section class="day${ds===today?' today':''}"><div class="day-toggle" role="button" tabindex="0" data-open="${ds}" aria-expanded="${isOpen}"><span class="day-title"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small></span><span class="preview">${brief}${!isOpen&&events.length>2?`<span class="more">ועוד ${events.length-2} אירועים</span>`:''}</span><span class="toggle-arrow">${isOpen?'⌃':'⌄'}</span></div>`;
    if(isOpen){
     h+=`<div class="day-detail">`+events.map(it=>{const c=esc(mem(it.m).color);if(it.type==='task')return `<div class="it task${it.done?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${it.done?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`;return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${esc(it.time)}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">↻</span>':''}</div>`}).join('');
     const heart=S.rewards.some(r=>r.date===ds&&r.child==='tamara'),crown=S.rewards.some(r=>r.date===ds&&r.child==='yehonatan');
@@ -289,7 +352,6 @@ function render(){
  $('#notes').innerHTML=wn().map((n,i)=>`<li><span>${esc(n.text)}</span><button data-n="${i}">✕</button></li>`).join('');
 }
 $('#grid').onclick=async e=>{
- const toggle=e.target.closest('[data-open]');if(toggle){openedDay=openedDay===toggle.dataset.open?null:toggle.dataset.open;render();return}
   const rewardButton=e.target.closest('.rw');
   if(rewardButton){
     const ds=rewardButton.dataset.day, child=rewardButton.dataset.child;
@@ -304,13 +366,18 @@ $('#grid').onclick=async e=>{
     return;
   }
   const ck=e.target.closest('.ck');
-  if(ck){const it=S.items.find(i=>i.id===ck.dataset.id);it.done=ck.checked;render();
-    const{error}=await db.from('items').update({done:ck.checked}).eq('id',it.id);if(error){fail(error);reload('items')}return}
+  if(ck){const it=S.items.find(i=>i.id===ck.dataset.id);if(!it)return;
+    it.done=ck.checked;render();
+    const{error}=await db.from('items').update({done:ck.checked}).eq('id',it.id);
+    if(error){fail(error);reload('items')}return}
+  const toggle=e.target.closest('[data-open]');
+  if(toggle){openedDay=openedDay===toggle.dataset.open?null:toggle.dataset.open;render();return}
   const it=e.target.closest('.it');
   if(it){openM(it.dataset.id);return}
   const a=e.target.closest('[data-d]');
   if(a)openM(null,a.dataset.d);
 };
+$('#grid').onkeydown=e=>{if((e.key==='Enter'||e.key===' ')&&e.target.matches('.day-toggle')){e.preventDefault();e.target.click()}};
 $('#notes').onclick=async e=>{const n=e.target.dataset.n;if(n==null)return;
   const{error}=await db.from('week_notes').delete().eq('id',wn()[+n].id);if(error)return fail(error);reload('notes')};
 $('#noteAdd').onclick=async()=>{const v=$('#noteIn').value.trim();if(!v)return;
@@ -324,9 +391,20 @@ $('#monthGrid').onclick=e=>{const b=e.target.closest('[data-select]');if(b){sele
 $('#monthDetail').onclick=e=>{const add=e.target.closest('[data-d]');if(add){openM(null,add.dataset.d);return}const it=e.target.closest('[data-id]');if(it){openM(it.dataset.id);return}if(e.target.closest('#monthGoDay')){wk=sow(parse(selectedMonthDay));viewMode='week';openedDay=selectedMonthDay;render()}};
 $('#addTop').onclick=()=>openM(null,viewMode==='month'?selectedMonthDay:iso(new Date()));
 $('#mgrTop').onclick=()=>{drawMembers();$('#ovM').classList.add('on')};
-function applyTheme(){const dark=themePref==='dark'||(themePref==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';$('#themeToggle').textContent=themePref==='light'?'☀':themePref==='dark'?'☾':'◐';$('#themeToggle').title='מצב תצוגה: '+(themePref==='light'?'בהיר':themePref==='dark'?'כהה':'אוטומטי')}
-$('#themeToggle').onclick=()=>{themePref=themePref==='auto'?'light':themePref==='light'?'dark':'auto';localStorage.setItem('sinai-theme',themePref);applyTheme()};
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);applyTheme();
+function applyTheme(){
+  document.documentElement.dataset.theme=themePref;
+  const toggle=$('#themeToggle');
+  toggle.textContent=themePref==='dark'?'☾':'☀';
+  toggle.title=themePref==='dark'?'מעבר למצב בהיר':'מעבר למצב כהה';
+  toggle.setAttribute('aria-label',toggle.title);
+  toggle.setAttribute('aria-pressed',String(themePref==='dark'));
+}
+$('#themeToggle').onclick=()=>{
+  themePref=themePref==='light'?'dark':'light';
+  localStorage.setItem('sinai-theme',themePref);
+  applyTheme();
+};
+applyTheme();
 
 /* ---- add / edit window ---- */
 function setType(t){type=t;$('#tyE').classList.toggle('on',t==='event');$('#tyT').classList.toggle('on',t==='task');
