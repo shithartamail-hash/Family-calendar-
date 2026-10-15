@@ -64,6 +64,23 @@ input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--l
 #urgentTop{background:#c95420;color:#fff;border:2px solid #ac4317;font-weight:800;box-shadow:0 2px 5px #0002}#urgentTop:focus-visible{outline:3px solid var(--ink)}
 .urgent-banner{margin:0 16px 12px;padding:12px 14px;border:2px solid var(--acc);border-radius:12px;background:var(--card)}.urgent-banner h2{margin:0 0 8px;font-size:1.1rem}.urgent-banner-row{display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--line);padding:7px 0}.urgent-banner-row span{overflow-wrap:anywhere;flex:1;font-weight:600}.urgent-banner-row button{white-space:nowrap}.urgent-error{color:#c0392b;font-size:.9rem;min-height:1.3em;margin:6px 0}
 .urgent-list{margin:12px 0;display:grid;gap:8px}.urgent-row{display:flex;gap:10px;align-items:center;justify-content:space-between;padding:12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}.urgent-row span{flex:1;overflow-wrap:anywhere}.urgent-row button{white-space:nowrap}.urgent-tip{font-size:.82rem;color:var(--mute)}
+
+/* Sinai mobile redesign */
+:root{color-scheme:light;--bg:#fcfbf7;--card:#fcfbf7;--ink:#292825;--mute:#807c75;--line:#e5e1d9;--acc:#d87550;--today:#f3eee7;--soft:#f2f0ea;--urgent:#f3eee8;--urgent-ink:#8b5943;--shadow:none;--logo:#203246}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#171c21;--card:#1f262b;--ink:#f5f1eb;--mute:#a9b0b2;--line:#394147;--acc:#e38b67;--today:#2a3035;--soft:#283036;--urgent:#302b29;--urgent-ink:#e5ab8c;--shadow:none;--logo:#f5f1eb}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:Assistant,Heebo,system-ui,sans-serif;font-size:15px;line-height:1.4}
+button{color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:9px;padding:8px 10px;min-height:36px}button.p{background:var(--acc);color:#fff;border-color:var(--acc)}
+header{padding:16px 16px 10px;display:flex;flex-direction:column;gap:12px;align-items:stretch}
+.brand-row,.toolbar,.tools,.weeknav,.toolbar-left{display:flex;align-items:center;gap:8px}.brand-row{justify-content:space-between}.brand{display:flex;align-items:center;gap:9px}.brand img{width:43px;height:43px;border-radius:10px;object-fit:cover}.brand h1{font-family:ui-rounded,'Arial Rounded MT Bold',Arial,sans-serif;font-size:23px;letter-spacing:-.6px;color:var(--logo);margin:0}.brand .sub{font-size:12px}.tools{gap:5px}.tools button{padding:5px 8px;font-size:13px}.toolbar{justify-content:space-between}.toolbar .sub{font-size:13px}.weeknav{gap:5px}.weeknav button{font-size:13px;padding:6px 10px}.view-switch{display:flex;background:var(--soft);padding:3px;border-radius:10px;gap:2px}.view-switch button{border:0;background:transparent;font-size:13px;padding:5px 10px;min-height:30px}.view-switch button.active{background:var(--card);box-shadow:0 1px 3px #0002;font-weight:700}
+.urgent-banner{margin:0 16px 8px;background:var(--urgent);border:0;border-right:3px solid var(--acc);padding:9px 12px;border-radius:6px}.urgent-banner h2{font-size:12px;color:var(--urgent-ink);margin:0 0 5px}.urgent-banner-row{border-top:1px solid var(--line);padding:5px 0;gap:8px;font-size:13px}.urgent-banner-row button{font-size:12px;padding:4px 8px;min-height:30px}
+.legend{padding:0 16px 6px;gap:5px}.legend .chip{background:var(--soft);border:0;font-size:11px;padding:3px 7px}.legend .dot{width:7px;height:7px}.legend #mgr{border:0;background:transparent;text-decoration:underline;font-size:12px;padding:3px 5px;min-height:25px}
+main{padding:0 16px 100px}.grid{display:block}.day{min-height:0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;display:block;padding:0}.day.today{border:0;border-bottom:1px solid var(--line);background:var(--today);padding-inline:7px;margin-inline:-7px;border-radius:7px}.day-toggle{width:100%;border:0;background:transparent;text-align:right;display:flex;align-items:flex-start;gap:10px;padding:10px 0;min-height:50px;border-radius:0}.day-title{width:72px;flex:none}.day-title b{display:block;font-size:14px}.day-title small{color:var(--mute);font-size:11px}.preview{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.preview-row{display:flex;align-items:center;gap:6px;font-size:12.5px;min-width:0}.preview-row .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.preview-row .time{color:var(--mute);font-size:11px;direction:ltr}.preview-row .dot{width:6px;height:6px;border-radius:50%;flex:none}.toggle-arrow{color:var(--mute);font-size:12px;padding-top:4px}.empty{font-size:12px;color:var(--mute)}.more{font-size:11px;color:var(--mute)}
+.day-detail{padding:6px 8px 10px;background:var(--soft);border-radius:8px;margin-bottom:7px;display:flex;flex-direction:column;gap:5px}.day-detail .it{padding:7px 9px;border-radius:6px;background:var(--card);border-inline-start:3px solid var(--c);box-shadow:none;font-size:13px}.day-detail .it .t{font-size:11px}.day-detail .it.task{align-items:center}.day-detail .reward-controls{padding:7px 0;border-top:1px solid var(--line);gap:7px;display:grid;grid-template-columns:1fr 1fr}.day-detail .reward-controls button{font-size:13px;padding:6px}.day-detail .add{width:100%;margin:0;border:1px solid var(--line);color:var(--ink);background:var(--card)}
+.fab{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:20px;z-index:5;width:62px;height:62px;border-radius:999px;background:var(--acc);color:white;border:0;font-size:37px;line-height:1;box-shadow:0 5px 18px #0003;display:flex;align-items:center;justify-content:center}.fab:focus-visible{outline:3px solid var(--ink)}
+.month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;direction:rtl}.month-weekday{text-align:center;color:var(--mute);font-size:11px;padding:6px 0}.month-day{border:0;background:var(--soft);border-radius:7px;min-height:49px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:5px}.month-day.outside{opacity:.35}.month-day.selected{outline:2px solid var(--acc)}.month-day.today{background:var(--today)}.month-day .count{width:5px;height:5px;border-radius:50%;background:var(--acc)}.month-detail{margin-top:12px;background:var(--soft);padding:12px;border-radius:9px}.month-detail .event{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.month-detail .event:last-child{border-bottom:0}.month-detail .time{font-size:11px;color:var(--mute)}.month-detail .actions{display:flex;gap:8px;margin-top:9px}.month-detail .actions button{flex:1;font-size:12px}.notes{display:none}.out{font-size:12px}.ov{z-index:20}.md{background:var(--card)}input,select{background:var(--card);color:var(--ink);border:1px solid var(--line)}.auth{background:var(--card)}#urgentTop{background:var(--urgent);border:1px solid var(--acc);color:var(--ink);box-shadow:none;font-weight:600}
+@media(max-width:430px){.brand-row{flex-wrap:wrap}.tools{width:100%;justify-content:space-between}.tools button{font-size:12px}.toolbar{gap:5px}.weeknav button{padding:6px 8px}}
+@media(min-width:750px){header,main,.legend,.urgent-banner{max-width:720px;margin-left:auto;margin-right:auto}.day-toggle{min-height:60px}.fab{left:max(20px,calc((100vw - 720px)/2))}}
 </style>
 </head>
 <body>
@@ -79,15 +96,12 @@ input,select{font:inherit;padding:8px;border-radius:8px;border:1px solid var(--l
 </section>
 
 <div id="app" class="hid">
-<header>
-  <div><h1>היומן המשפחתי <span>שלנו</span></h1><div class="sub" id="range"></div></div>
-  <div class="nav"><button id="next" aria-label="שבוע הבא">→</button><button id="today">היום</button><button id="prev" aria-label="שבוע קודם">←</button><button id="urgentTop">! הודעה דחופה</button><button class="p" id="addTop">+ הוספה</button><button class="out">יציאה</button></div>
-</header>
+<header><div class="brand-row"><div class="brand"><img src="./apple-touch-icon.png" alt="לוגו Sinai"><div><h1>Sinai</h1><div class="sub">היומן המשפחתי</div></div></div><div class="tools"><button id="themeToggle" aria-label="שינוי מצב תצוגה" title="בהיר, כהה או אוטומטי">☾</button><button id="urgentTop">! הודעה דחופה</button><button id="mgrTop">ניהול</button><button class="out">יציאה</button></div></div><div class="toolbar"><div class="weeknav"><button id="prev" aria-label="לתקופה הקודמת">→</button><button id="today">היום</button><button id="next" aria-label="לתקופה הבאה">←</button></div><div class="view-switch"><button id="modeWeek" class="active" aria-pressed="true">שבוע</button><button id="modeMonth" aria-pressed="false">חודש</button></div></div><div class="sub" id="range"></div></header>
 <section id="urgentBanner" class="urgent-banner hid" aria-live="polite"></section>
 <div class="legend" id="legend"></div>
-<main><div class="grid" id="grid"></div>
+<main><div class="grid" id="grid"></div><div class="month-grid hid" id="monthGrid"></div><section class="month-detail hid" id="monthDetail"></section>
 <section class="notes"><h2>📌 חשוב לזכור השבוע</h2><ul id="notes"></ul>
-<div class="row"><input id="noteIn" placeholder="הוסיפו תזכורת…"><button id="noteAdd">הוספה</button></div></section></main>
+<div class="row"><input id="noteIn" placeholder="הוסיפו תזכורת…"><button id="noteAdd">הוספה</button></div></section></main><button id="addTop" class="fab" aria-label="הוספת אירוע או משימה">+</button>
 </div>
 
 <div class="ov" id="ov"><div class="md">
@@ -128,6 +142,7 @@ const parse=s=>{const[a,b,c]=s.split('-').map(Number);return new Date(a,b-1,c)};
 const addD=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
 const sow=d=>addD(d,-d.getDay());
 const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+let viewMode='week',openedDay=null,selectedMonthDay=iso(new Date()),themePref=localStorage.getItem('sinai-theme')||'auto';
 let wk=sow(new Date()),editId=null,type='event',S={members:[],items:[],notes:[],rewards:[],urgent:[]},chan=null;
 const fail=e=>alert('משהו השתבש: '+(e.message||e));
 const mem=id=>S.members.find(m=>m.id===id)||{name:'?',color:'#999'};
@@ -217,25 +232,43 @@ function itemsOn(ds){
 }
 const wn=()=>S.notes.filter(n=>n.w===iso(wk));
 function render(){
-  const end=addD(wk,6);
-  $('#range').textContent=wk.getDate()+' '+MON[wk.getMonth()]+' – '+end.getDate()+' '+MON[end.getMonth()]+' '+end.getFullYear();
-  $('#legend').innerHTML=S.members.map(m=>`<span class="chip"><i class="dot" style="--c:${m.color}"></i>${esc(m.name)}</span>`).join('')+'<button id="mgr">👪 ניהול</button>'+(S.members.length?'':'<span class="sub">התחילו בהוספת בני משפחה</span>');
-  $('#mgr').onclick=()=>{drawMembers();$('#ovM').classList.add('on')};
-  const td=iso(new Date());let h='';
+ const end=addD(wk,6);
+ const monthDate=wk;
+ $('#range').textContent=viewMode==='week'?wk.getDate()+' '+MON[wk.getMonth()]+' – '+end.getDate()+' '+MON[end.getMonth()]+' '+end.getFullYear():MON[monthDate.getMonth()]+' '+monthDate.getFullYear();
+ $('#legend').innerHTML=S.members.map(m=>`<span class="chip"><i class="dot" style="--c:${m.color}"></i>${esc(m.name)}</span>`).join('');
+ $('#modeWeek').classList.toggle('active',viewMode==='week');$('#modeMonth').classList.toggle('active',viewMode==='month');
+ $('#modeWeek').setAttribute('aria-pressed',viewMode==='week');$('#modeMonth').setAttribute('aria-pressed',viewMode==='month');
+ $('#grid').classList.toggle('hid',viewMode!=='week');$('#monthGrid').classList.toggle('hid',viewMode!=='month');$('#monthDetail').classList.toggle('hid',viewMode!=='month');
+ const today=iso(new Date());
+ if(viewMode==='week'){
+  let h='';
   for(let i=0;i<7;i++){
-    const dt=addD(wk,i),ds=iso(dt);
-    h+=`<div class="day${ds===td?' today':''}"><div class="dh"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small></div><div class="db" data-d="${ds}">`;
-    h+=itemsOn(ds).map(it=>{const c=mem(it.m).color;
-      if(it.type==='task'){const dn=it.done;return `<div class="it task${dn?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${dn?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`}
-      return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${it.time}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">🔁</span>':''}</div>`}).join('');
-    const hasHeart=S.rewards.some(r=>r.date===ds&&r.child==='tamara');
-    const hasCrown=S.rewards.some(r=>r.date===ds&&r.child==='yehonatan');
-    h+=`</div><button class="add" data-d="${ds}">+</button><div class="reward-controls"><button class="rw${hasHeart?' earned':''}" data-day="${ds}" data-child="tamara" aria-pressed="${hasHeart}">♥ תמרה</button><button class="rw${hasCrown?' earned':''}" data-day="${ds}" data-child="yehonatan" aria-pressed="${hasCrown}">♛ יהונתן</button></div></div>`;
+   const dt=addD(wk,i),ds=iso(dt),events=itemsOn(ds),isOpen=openedDay===ds;
+   const brief=events.slice(0,isOpen?100:2).map(it=>`<div class="preview-row"><i class="dot" style="background:${esc(mem(it.m).color)}"></i><span class="name">${esc(it.title)}${it.done?' ✓':''}</span>${it.time?`<span class="time">${esc(it.time)}</span>`:''}</div>`).join('') || '<span class="empty">אין אירועים</span>';
+   h+=`<section class="day${ds===today?' today':''}"><button class="day-toggle" data-open="${ds}" aria-expanded="${isOpen}"><span class="day-title"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small></span><span class="preview">${brief}${!isOpen&&events.length>2?`<span class="more">ועוד ${events.length-2} אירועים</span>`:''}</span><span class="toggle-arrow">${isOpen?'⌃':'⌄'}</span></button>`;
+   if(isOpen){
+    h+=`<div class="day-detail">`+events.map(it=>{const c=esc(mem(it.m).color);if(it.type==='task')return `<div class="it task${it.done?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${it.done?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`;return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${esc(it.time)}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">↻</span>':''}</div>`}).join('');
+    const heart=S.rewards.some(r=>r.date===ds&&r.child==='tamara'),crown=S.rewards.some(r=>r.date===ds&&r.child==='yehonatan');
+    h+=`<div class="reward-controls"><button class="rw${heart?' earned':''}" data-day="${ds}" data-child="tamara" aria-pressed="${heart}">♥ תמרה</button><button class="rw${crown?' earned':''}" data-day="${ds}" data-child="yehonatan" aria-pressed="${crown}">♛ יהונתן</button></div><button class="add" data-d="${ds}">+ הוסף ליום הזה</button></div>`;
+   }
+   h+='</section>';
   }
   $('#grid').innerHTML=h;
-  $('#notes').innerHTML=wn().map((n,i)=>`<li><span>• ${esc(n.text)}</span><button data-n="${i}" style="padding:0 8px">✕</button></li>`).join('')||'<li>אין תזכורות השבוע 🎉</li>';
+ }else{
+  const first=new Date(wk.getFullYear(),wk.getMonth(),1),s=sow(first);
+  let html=DAYS.map(d=>`<span class="month-weekday">${d.slice(0,1)}</span>`).join('');
+  for(let i=0;i<42;i++){
+   const dt=addD(s,i),ds=iso(dt),out=dt.getMonth()!==first.getMonth();
+   html+=`<button class="month-day${out?' outside':''}${ds===selectedMonthDay?' selected':''}${ds===today?' today':''}" data-select="${ds}" aria-label="${DAYS[dt.getDay()]} ${ds}"><span>${dt.getDate()}</span>${itemsOn(ds).length?'<i class="count"></i>':''}</button>`;
+  }
+  $('#monthGrid').innerHTML=html;
+  const d=parse(selectedMonthDay),events=itemsOn(selectedMonthDay);
+  $('#monthDetail').innerHTML=`<strong>${DAYS[d.getDay()]} · ${d.getDate()}/${d.getMonth()+1}</strong>`+(events.map(it=>`<div class="event" data-id="${it.id}">${it.time?`<span class="time">${esc(it.time)} · </span>`:''}${esc(it.title)}${it.done?' ✓':''}</div>`).join('')||'<p class="empty">אין אירועים ביום הזה</p>')+`<div class="actions"><button class="add" data-d="${selectedMonthDay}">+ הוסף ליום הזה</button><button id="monthGoDay">פתח יום בשבוע</button></div>`;
+ }
+ $('#notes').innerHTML=wn().map((n,i)=>`<li><span>${esc(n.text)}</span><button data-n="${i}">✕</button></li>`).join('');
 }
 $('#grid').onclick=async e=>{
+ const toggle=e.target.closest('[data-open]');if(toggle){openedDay=openedDay===toggle.dataset.open?null:toggle.dataset.open;render();return}
   const rewardButton=e.target.closest('.rw');
   if(rewardButton){
     const ds=rewardButton.dataset.day, child=rewardButton.dataset.child;
@@ -261,10 +294,18 @@ $('#notes').onclick=async e=>{const n=e.target.dataset.n;if(n==null)return;
   const{error}=await db.from('week_notes').delete().eq('id',wn()[+n].id);if(error)return fail(error);reload('notes')};
 $('#noteAdd').onclick=async()=>{const v=$('#noteIn').value.trim();if(!v)return;
   const{error}=await db.from('week_notes').insert({week_start:iso(wk),content:v});if(error)return fail(error);$('#noteIn').value='';reload('notes')};
-$('#prev').onclick=()=>{wk=addD(wk,-7);render()};
-$('#next').onclick=()=>{wk=addD(wk,7);render()};
-$('#today').onclick=()=>{wk=sow(new Date());render()};
-$('#addTop').onclick=()=>openM(null,iso(new Date()));
+$('#prev').onclick=()=>{wk=viewMode==='week'?addD(wk,-7):new Date(wk.getFullYear(),wk.getMonth()-1,1);openedDay=null;render()};
+$('#next').onclick=()=>{wk=viewMode==='week'?addD(wk,7):new Date(wk.getFullYear(),wk.getMonth()+1,1);openedDay=null;render()};
+$('#today').onclick=()=>{wk=viewMode==='week'?sow(new Date()):new Date(new Date().getFullYear(),new Date().getMonth(),1);selectedMonthDay=iso(new Date());openedDay=null;render()};
+$('#modeWeek').onclick=()=>{viewMode='week';wk=sow(wk);openedDay=null;render()};
+$('#modeMonth').onclick=()=>{viewMode='month';wk=new Date(wk.getFullYear(),wk.getMonth(),1);selectedMonthDay=iso(new Date(wk.getFullYear(),wk.getMonth(),1));render()};
+$('#monthGrid').onclick=e=>{const b=e.target.closest('[data-select]');if(b){selectedMonthDay=b.dataset.select;render()}};
+$('#monthDetail').onclick=e=>{const add=e.target.closest('[data-d]');if(add){openM(null,add.dataset.d);return}const it=e.target.closest('[data-id]');if(it){openM(it.dataset.id);return}if(e.target.closest('#monthGoDay')){wk=sow(parse(selectedMonthDay));viewMode='week';openedDay=selectedMonthDay;render()}};
+$('#addTop').onclick=()=>openM(null,viewMode==='month'?selectedMonthDay:iso(new Date()));
+$('#mgrTop').onclick=()=>{drawMembers();$('#ovM').classList.add('on')};
+function applyTheme(){const dark=themePref==='dark'||(themePref==='auto'&&window.matchMedia('(prefers-color-scheme: dark)').matches);document.documentElement.dataset.theme=dark?'dark':'light';$('#themeToggle').textContent=themePref==='light'?'☀':themePref==='dark'?'☾':'◐';$('#themeToggle').title='מצב תצוגה: '+(themePref==='light'?'בהיר':themePref==='dark'?'כהה':'אוטומטי')}
+$('#themeToggle').onclick=()=>{themePref=themePref==='auto'?'light':themePref==='light'?'dark':'auto';localStorage.setItem('sinai-theme',themePref);applyTheme()};
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change',applyTheme);applyTheme();
 
 /* ---- add / edit window ---- */
 function setType(t){type=t;$('#tyE').classList.toggle('on',t==='event');$('#tyT').classList.toggle('on',t==='task');
