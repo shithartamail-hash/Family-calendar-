@@ -81,6 +81,25 @@ main{padding:0 16px 100px}.grid{display:block}.day{min-height:0;border:0;border-
 .month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;direction:rtl}.month-weekday{text-align:center;color:var(--mute);font-size:11px;padding:6px 0}.month-day{border:0;background:var(--soft);border-radius:7px;min-height:49px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:5px}.month-day.outside{opacity:.35}.month-day.selected{outline:2px solid var(--acc)}.month-day.today{background:var(--today)}.month-day .count{width:5px;height:5px;border-radius:50%;background:var(--acc)}.month-detail{margin-top:12px;background:var(--soft);padding:12px;border-radius:9px}.month-detail .event{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.month-detail .event:last-child{border-bottom:0}.month-detail .time{font-size:11px;color:var(--mute)}.month-detail .actions{display:flex;gap:8px;margin-top:9px}.month-detail .actions button{flex:1;font-size:12px}.notes{display:none}.out{font-size:12px}.ov{z-index:20}.md{background:var(--card)}input,select{background:var(--card);color:var(--ink);border:1px solid var(--line)}.auth{background:var(--card)}#urgentTop{background:var(--urgent);border:1px solid var(--acc);color:var(--ink);box-shadow:none;font-weight:600}
 @media(max-width:430px){.brand-row{flex-wrap:wrap}.tools{width:100%;justify-content:space-between}.tools button{font-size:12px}.toolbar{gap:5px}.weeknav button{padding:6px 8px}}
 @media(min-width:750px){header,main,.legend,.urgent-banner{max-width:720px;margin-left:auto;margin-right:auto}.day-toggle{min-height:60px}.fab{left:max(20px,calc((100vw - 720px)/2))}}
+
+/* Fixed-width mobile viewport, including after editing an event */
+html,body{width:100%;max-width:100%;overflow-x:clip}
+#app,header,main,.brand-row,.toolbar,.legend,.grid,.month-grid,.month-detail,.day,.day-toggle{max-width:100%;min-width:0}
+.brand-row,.toolbar{min-width:0;flex-wrap:wrap}
+.brand{min-width:0}.brand img{flex:none}
+#range{overflow-wrap:anywhere}
+.preview,.preview-row,.preview-row .name,.month-detail{min-width:0}
+.ov{width:100%;max-width:100vw;overflow-x:hidden}
+.md{min-width:0;max-width:min(420px,calc(100vw - 32px))}
+.md input,.md select,.md textarea{font-size:16px} /* Prevent iOS auto-zoom */
+.tools button{font-size:14px;padding:8px 11px;min-height:40px}
+.brand h1{font-size:27px}.brand img{width:49px;height:49px}
+.event-dots{display:inline-flex;align-items:center;gap:3px;flex:none}.event-dots .dot{display:inline-block;width:6px;height:6px}
+.family-choices{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:7px}
+.family-option{display:flex!important;align-items:center;gap:7px;margin:0!important;padding:10px;border:1px solid var(--line);border-radius:9px;background:var(--soft);font-size:14px!important;color:var(--ink)!important;cursor:pointer;min-width:0}
+.family-option input{width:19px!important;height:19px;margin:0;accent-color:var(--acc)}
+.family-option .dot{flex:none;width:8px;height:8px}
+@media(max-width:430px){.brand-row{gap:8px}.tools{justify-content:space-between;flex-wrap:wrap;gap:5px}.tools button{font-size:13px;padding:7px 9px}.toolbar{gap:6px}}
 </style>
 </head>
 <body>
@@ -96,7 +115,7 @@ main{padding:0 16px 100px}.grid{display:block}.day{min-height:0;border:0;border-
 </section>
 
 <div id="app" class="hid">
-<header><div class="brand-row"><div class="brand"><img src="./apple-touch-icon.png" alt="לוגו Sinai"><div><h1>Sinai</h1><div class="sub">היומן המשפחתי</div></div></div><div class="tools"><button id="themeToggle" aria-label="שינוי מצב תצוגה" title="בהיר, כהה או אוטומטי">☾</button><button id="urgentTop">! הודעה דחופה</button><button id="mgrTop">ניהול</button><button class="out">יציאה</button></div></div><div class="toolbar"><div class="weeknav"><button id="prev" aria-label="לתקופה הקודמת">→</button><button id="today">היום</button><button id="next" aria-label="לתקופה הבאה">←</button></div><div class="view-switch"><button id="modeWeek" class="active" aria-pressed="true">שבוע</button><button id="modeMonth" aria-pressed="false">חודש</button></div></div><div class="sub" id="range"></div></header>
+<header><div class="brand-row"><div class="brand"><img src="./apple-touch-icon.png" alt="לוגו Sinai"><div><h1>Sinai</h1><div class="sub">היומן המשפחתי</div></div></div><div class="tools"><button id="themeToggle" aria-label="שינוי מצב תצוגה" title="בהיר, כהה או אוטומטי">☾</button><button id="urgentTop">הודעה דחופה !</button><button id="mgrTop">ניהול</button></div></div><div class="toolbar"><div class="weeknav"><button id="prev" aria-label="לתקופה הקודמת">→</button><button id="today">היום</button><button id="next" aria-label="לתקופה הבאה">←</button></div><div class="view-switch"><button id="modeWeek" class="active" aria-pressed="true">שבוע</button><button id="modeMonth" aria-pressed="false">חודש</button></div></div><div class="sub" id="range"></div></header>
 <section id="urgentBanner" class="urgent-banner hid" aria-live="polite"></section>
 <div class="legend" id="legend"></div>
 <main><div class="grid" id="grid"></div><div class="month-grid hid" id="monthGrid"></div><section class="month-detail hid" id="monthDetail"></section>
@@ -110,7 +129,7 @@ main{padding:0 16px 100px}.grid{display:block}.day{min-height:0;border:0;border-
   <label>כותרת</label><input id="fT">
   <label>תאריך</label><input id="fD" type="date">
   <label id="lT">שעה (לא חובה)</label><input id="fH" type="time">
-  <label>למי?</label><select id="fM"></select>
+  <label>למי? (אפשר לבחור כמה, או להשאיר ללא שיוך)</label><div id="fMembers" class="family-choices"></div>
   <label id="lR"><input id="fR" type="checkbox" style="width:auto"> חוזר מדי שבוע</label>
   <div class="foot"><button class="p" id="sv">שמירה</button><button id="del">מחיקה</button><button id="cx">ביטול</button></div>
 </div></div>
@@ -145,7 +164,9 @@ const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',
 let viewMode='week',openedDay=null,selectedMonthDay=iso(new Date()),themePref=localStorage.getItem('sinai-theme')||'auto';
 let wk=sow(new Date()),editId=null,type='event',S={members:[],items:[],notes:[],rewards:[],urgent:[]},chan=null;
 const fail=e=>alert('משהו השתבש: '+(e.message||e));
-const mem=id=>S.members.find(m=>m.id===id)||{name:'?',color:'#999'};
+const mem=id=>S.members.find(m=>m.id===id)||{name:'ללא שיוך',color:'#999'};
+const linked=it=>it.ms&&it.ms.length?it.ms:(it.m?[it.m]:[]);
+const eventDots=it=>linked(it).length?linked(it).map(id=>`<i class="dot" style="background:${esc(mem(id).color)}"></i>`).join(''):'<i class="dot" style="background:#b4afa8"></i>';
 const show=x=>['login','denied','app'].forEach(k=>$('#'+k).classList.toggle('hid',k!==x));
 
 /* ---- loading data from the database ---- */
@@ -153,7 +174,7 @@ async function reload(t){
   const{data,error}=await db.from(t==='notes'?'week_notes':t==='rewards'?'daily_rewards':t==='urgent'?'urgent_messages':t).select('*').order('created_at');
   if(error)return fail(error);
   if(t==='members')S.members=data.map(r=>({id:r.id,name:r.name,color:r.color}));
-  else if(t==='items')S.items=data.map(r=>({id:r.id,type:r.type,title:r.title,date:r.item_date,time:(r.item_time||'').slice(0,5),m:r.member_id,rec:r.recurring,done:r.done}));
+  else if(t==='items')S.items=data.map(r=>({id:r.id,type:r.type,title:r.title,date:r.item_date,time:(r.item_time||'').slice(0,5),m:r.member_id,ms:Array.isArray(r.member_ids)?r.member_ids:(r.member_id?[r.member_id]:[]),rec:r.recurring,done:r.done}));
   else if(t==='rewards')S.rewards=data.map(r=>({id:r.id,date:r.reward_date,child:r.child}));
   else if(t==='urgent'){S.urgent=data.map(r=>({id:r.id,content:r.content,done:r.is_done}));drawUrgent();}
   else S.notes=data.map(r=>({id:r.id,w:r.week_start,text:r.content}));
@@ -193,7 +214,7 @@ function drawUrgent(){
  $('#urgentList').innerHTML=active.length?active.map(m=>`<div class="urgent-row"><span>${esc(m.content)}</span><button class="urgentDone" data-id="${m.id}">✓ בוצע</button></div>`).join(''):'<p class="sub">אין הודעות דחופות פעילות.</p>';
  $('#urgentBanner').classList.toggle('hid',!active.length);
  $('#urgentBanner').innerHTML=active.length?`<h2>❗ הודעות דחופות (${active.length})</h2>`+active.map(m=>`<div class="urgent-banner-row"><span>${esc(m.content)}</span><button class="urgentDone" data-id="${m.id}">✓ בוצע</button></div>`).join(''):'';
- $('#urgentTop').textContent=active.length?`! הודעה דחופה (${active.length})`:'! הודעה דחופה';
+ $('#urgentTop').textContent=active.length?`הודעה דחופה (${active.length}) !`:'הודעה דחופה !';
 }
 $('#urgentTop').onclick=()=>{$('#urgentError').textContent='';drawUrgent();$('#ovUrgent').classList.add('on')};
 $('#urgentClose').onclick=()=>$('#ovUrgent').classList.remove('on');
@@ -244,7 +265,7 @@ function render(){
   let h='';
   for(let i=0;i<7;i++){
    const dt=addD(wk,i),ds=iso(dt),events=itemsOn(ds),isOpen=openedDay===ds;
-   const brief=events.slice(0,isOpen?100:2).map(it=>`<div class="preview-row"><i class="dot" style="background:${esc(mem(it.m).color)}"></i><span class="name">${esc(it.title)}${it.done?' ✓':''}</span>${it.time?`<span class="time">${esc(it.time)}</span>`:''}</div>`).join('') || '<span class="empty">אין אירועים</span>';
+   const brief=events.slice(0,isOpen?100:2).map(it=>`<div class="preview-row"><span class="event-dots">${eventDots(it)}</span><span class="name">${esc(it.title)}${it.done?' ✓':''}</span>${it.time?`<span class="time">${esc(it.time)}</span>`:''}</div>`).join('') || '<span class="empty">אין אירועים</span>';
    h+=`<section class="day${ds===today?' today':''}"><button class="day-toggle" data-open="${ds}" aria-expanded="${isOpen}"><span class="day-title"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small></span><span class="preview">${brief}${!isOpen&&events.length>2?`<span class="more">ועוד ${events.length-2} אירועים</span>`:''}</span><span class="toggle-arrow">${isOpen?'⌃':'⌄'}</span></button>`;
    if(isOpen){
     h+=`<div class="day-detail">`+events.map(it=>{const c=esc(mem(it.m).color);if(it.type==='task')return `<div class="it task${it.done?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${it.done?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`;return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${esc(it.time)}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">↻</span>':''}</div>`}).join('');
@@ -312,20 +333,21 @@ function setType(t){type=t;$('#tyE').classList.toggle('on',t==='event');$('#tyT'
   $('#fH').style.display=$('#lT').style.display=$('#lR').style.display=t==='event'?'':'none';}
 $('#tyE').onclick=()=>setType('event');$('#tyT').onclick=()=>setType('task');
 function openM(id,ds){
-  if(!S.members.length){alert('קודם הוסיפו לפחות בן משפחה אחד (כפתור "ניהול")');return}
   editId=id;const it=id?S.items.find(i=>i.id===id):null;
   $('#mt').textContent=it?'עריכה':'הוספה';
-  $('#fM').innerHTML=S.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join('');
+  const selectedIds=it?linked(it):[];
+  $('#fMembers').innerHTML=S.members.map(m=>`<label class="family-option"><input type="checkbox" value="${esc(m.id)}" ${selectedIds.includes(m.id)?'checked':''}><i class="dot" style="--c:${esc(m.color)}"></i><span>${esc(m.name)}</span></label>`).join('')||'<p class="sub">אין בני משפחה — האירוע יישאר ללא שיוך.</p>';
   setType(it?it.type:'event');
   $('#fT').value=it?it.title:'';$('#fD').value=it?it.date:ds;$('#fH').value=it&&it.time||'';
-  $('#fM').value=it&&it.m?it.m:S.members[0].id;$('#fR').checked=!!(it&&it.rec);
+  $('#fR').checked=!!(it&&it.rec);
   $('#del').style.display=it?'':'none';$('#ov').classList.add('on');$('#fT').focus();
 }
-const closeM=()=>$('#ov').classList.remove('on');
+const closeM=()=>{if(document.activeElement instanceof HTMLElement)document.activeElement.blur();$('#ov').classList.remove('on');window.scrollTo({left:0,top:window.scrollY,behavior:'instant'});};
 $('#cx').onclick=closeM;
 $('#sv').onclick=async()=>{
   const title=$('#fT').value.trim();if(!title||!$('#fD').value){$('#fT').focus();return}
-  const isE=type==='event',row={type,title,item_date:$('#fD').value,member_id:$('#fM').value,
+  const assigned=[...document.querySelectorAll('#fMembers input:checked')].map(el=>el.value);
+  const isE=type==='event',row={type,title,item_date:$('#fD').value,member_id:assigned[0]||null,member_ids:assigned,
     item_time:isE&&$('#fH').value?$('#fH').value:null,recurring:isE&&$('#fR').checked};
   const{error}=editId?await db.from('items').update(row).eq('id',editId):await db.from('items').insert(row);
   if(error)return fail(error);
