@@ -153,6 +153,10 @@ header{gap:9px;padding-top:15px}
 main{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px))}
 @media(max-width:370px){.daily-tip{padding-left:82px}}
 
+/* Small Friday-only candle time, placed on the left edge of the day heading. */
+.day-toggle{position:relative}
+.friday-candles{position:absolute;left:20px;top:2px;white-space:nowrap;color:var(--mute);font-size:10px;font-weight:500;direction:rtl}
+.day-toggle:has(.friday-candles){padding-top:23px}
 /* Israel holiday overlay */
 .holiday-label{display:block;color:var(--acc);font-size:11px;line-height:1.4;font-weight:600;margin-top:3px;overflow-wrap:anywhere}
 .month-day.has-holiday{position:relative}
@@ -204,6 +208,46 @@ main{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px))}
 <label for="urgentInput">הודעה חדשה</label><input id="urgentInput" maxlength="240" placeholder="מה חשוב לא לשכוח?"><div id="urgentError" class="urgent-error" role="alert"></div>
 <div class="foot"><button class="p" id="urgentAdd">הוספת הודעה</button><button id="urgentClose">סגירה</button></div>
 </div></div>
+<script>
+/* Sinai candle-lighting times for Geulim, Israel. Visible only on Fridays. */
+window.SinaiCandles=(()=>{
+ const times=new Map(), loaded=new Set(), loading=new Set(), callbacks=[];
+ function notify(){callbacks.forEach(cb=>cb())}
+ async function load(year){
+  if(loaded.has(year)||loading.has(year))return;
+  loading.add(year);
+  try{
+   const key='sinai-candles-geulim-v1-'+year;
+   let items=null;
+   try{const cached=JSON.parse(localStorage.getItem(key)||'null');if(cached&&Date.now()-cached.saved<7*86400000)items=cached.items}catch{}
+   if(!items){
+    const q=new URLSearchParams({v:'1',cfg:'json',year:String(year),yt:'G',i:'on',c:'on',b:'20',latitude:'32.29956',longitude:'34.94647',tzid:'Asia/Jerusalem',lg:'he'});
+    const r=await fetch('https://www.hebcal.com/hebcal?'+q.toString());
+    if(!r.ok)throw Error('Hebcal '+r.status);
+    items=(await r.json()).items||[];
+    try{localStorage.setItem(key,JSON.stringify({saved:Date.now(),items}))}catch{}
+   }
+   for(const item of items){
+    if(item.category!=='candles'||!item.date)continue;
+    const date=String(item.date).slice(0,10);
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(date))continue;
+    // Only Friday candle lighting, not other festival candle-lighting dates.
+    const [y,m,d]=date.split('-').map(Number);
+    if(new Date(y,m-1,d).getDay()!==5)continue;
+    const instant=new Date(item.date);
+    if(!Number.isFinite(instant.getTime()))continue;
+    times.set(date,new Intl.DateTimeFormat('he-IL',{timeZone:'Asia/Jerusalem',hour:'2-digit',minute:'2-digit',hourCycle:'h23'}).format(instant));
+   }
+   loaded.add(year);notify();
+  }catch(e){console.warn('Geulim candle-lighting unavailable',e)}
+  finally{loading.delete(year)}
+ }
+ function ensure(date){void load(date.getFullYear());if(date.getMonth()===11)void load(date.getFullYear()+1)}
+ function get(date){return times.get(date)||''}
+ function onChange(cb){callbacks.push(cb)}
+ return{ensure,get,onChange};
+})();
+</script>
 <script>
 /* Sinai public holiday overlay: Israel calendar, never persisted to family tables. */
 window.SinaiHolidays=(()=>{
@@ -398,6 +442,7 @@ function itemsOn(ds){
 const wn=()=>S.notes.filter(n=>n.w===iso(wk));
 function render(){
  SinaiHolidays.ensure(wk);
+ SinaiCandles.ensure(wk);
  const end=addD(wk,6);
  const monthDate=wk;
  $('#range').textContent=viewMode==='week'?wk.getDate()+' '+MON[wk.getMonth()]+' – '+end.getDate()+' '+MON[end.getMonth()]+' '+end.getFullYear():MON[monthDate.getMonth()]+' '+monthDate.getFullYear();
@@ -411,7 +456,7 @@ function render(){
   for(let i=0;i<7;i++){
    const dt=addD(wk,i),ds=iso(dt),events=itemsOn(ds),isOpen=openedDay===ds;
    const brief=events.slice(0,isOpen?100:2).map(it=>`<div class="preview-row${it.type==='task'&&it.done?' completed-task':''}">${it.type==='task'?`<input type="checkbox" class="ck compact-ck" data-id="${it.id}" aria-label="סמן משימה: ${esc(it.title)}" ${it.done?'checked':''}>`:`<span class="event-dots">${eventDots(it)}</span>`}<span class="name">${esc(it.title)}</span>${it.time?`<span class="time">${esc(it.time)}</span>`:''}</div>`).join('') || '<span class="empty">אין אירועים</span>';
-   h+=`<section class="day${ds===today?' today':''}"><div class="day-toggle" role="button" tabindex="0" data-open="${ds}" aria-expanded="${isOpen}"><span class="day-title"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small>${SinaiHolidays.get(ds).map(n=>`<span class="holiday-label">${esc(n)}</span>`).join('')}</span><span class="preview">${brief}${!isOpen&&events.length>2?`<span class="more">ועוד ${events.length-2} אירועים</span>`:''}</span><span class="toggle-arrow">${isOpen?'⌃':'⌄'}</span></div>`;
+   h+=`<section class="day${ds===today?' today':''}"><div class="day-toggle" role="button" tabindex="0" data-open="${ds}" aria-expanded="${isOpen}"><span class="day-title"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small>${SinaiHolidays.get(ds).map(n=>`<span class="holiday-label">${esc(n)}</span>`).join('')}</span>${i===5&&SinaiCandles.get(ds)?`<span class="friday-candles">הדלקת נרות בגאולים ${SinaiCandles.get(ds)}</span>`:''}<span class="preview">${brief}${!isOpen&&events.length>2?`<span class="more">ועוד ${events.length-2} אירועים</span>`:''}</span><span class="toggle-arrow">${isOpen?'⌃':'⌄'}</span></div>`;
    if(isOpen){
     h+=`<div class="day-detail">`+events.map(it=>{const c=esc(mem(it.m).color);if(it.type==='task')return `<div class="it task${it.done?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${it.done?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`;return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${esc(it.time)}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">↻</span>':''}</div>`}).join('');
     const heart=S.rewards.some(r=>r.date===ds&&r.child==='tamara'),crown=S.rewards.some(r=>r.date===ds&&r.child==='yehonatan');
@@ -429,11 +474,12 @@ function render(){
   }
   $('#monthGrid').innerHTML=html;
   const d=parse(selectedMonthDay),events=itemsOn(selectedMonthDay);
-  $('#monthDetail').innerHTML=`<strong>${DAYS[d.getDay()]} · ${d.getDate()}/${d.getMonth()+1}</strong><div class="month-holidays">${SinaiHolidays.get(selectedMonthDay).map(esc).join(' · ')}</div>`+(events.map(it=>`<div class="event" data-id="${it.id}">${it.time?`<span class="time">${esc(it.time)} · </span>`:''}${esc(it.title)}${it.done?' ✓':''}</div>`).join('')||'<p class="empty">אין אירועים ביום הזה</p>')+`<div class="actions"><button class="add" data-d="${selectedMonthDay}">+ הוסף ליום הזה</button><button id="monthGoDay">פתח יום בשבוע</button></div>`;
+  $('#monthDetail').innerHTML=`<strong>${DAYS[d.getDay()]} · ${d.getDate()}/${d.getMonth()+1}</strong><div class="month-holidays">${SinaiHolidays.get(selectedMonthDay).map(esc).join(' · ')}</div>${d.getDay()===5&&SinaiCandles.get(selectedMonthDay)?`<div class="month-holidays">הדלקת נרות בגאולים ${SinaiCandles.get(selectedMonthDay)}</div>`:''}`+(events.map(it=>`<div class="event" data-id="${it.id}">${it.time?`<span class="time">${esc(it.time)} · </span>`:''}${esc(it.title)}${it.done?' ✓':''}</div>`).join('')||'<p class="empty">אין אירועים ביום הזה</p>')+`<div class="actions"><button class="add" data-d="${selectedMonthDay}">+ הוסף ליום הזה</button><button id="monthGoDay">פתח יום בשבוע</button></div>`;
  }
  $('#notes').innerHTML=wn().map((n,i)=>`<li><span>${esc(n.text)}</span><button data-n="${i}">✕</button></li>`).join('');
 }
 SinaiHolidays.onChange(()=>{if(!$('#app').classList.contains('hid'))render()});
+SinaiCandles.onChange(()=>{if(!$('#app').classList.contains('hid'))render()});
 $('#grid').onclick=async e=>{
   const rewardButton=e.target.closest('.rw');
   if(rewardButton){
