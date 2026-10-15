@@ -469,7 +469,7 @@ $('#prev').onclick=()=>{wk=viewMode==='week'?addD(wk,-7):new Date(wk.getFullYear
 $('#next').onclick=()=>{wk=viewMode==='week'?addD(wk,7):new Date(wk.getFullYear(),wk.getMonth()+1,1);openedDay=null;render()};
 $('#today').onclick=()=>{wk=viewMode==='week'?sow(new Date()):new Date(new Date().getFullYear(),new Date().getMonth(),1);selectedMonthDay=iso(new Date());openedDay=null;render()};
 $('#modeWeek').onclick=()=>{viewMode='week';wk=sow(wk);openedDay=null;render()};
-$('#modeMonth').onclick=()=>{viewMode='month';wk=new Date(wk.getFullYear(),wk.getMonth(),1);selectedMonthDay=iso(new Date(wk.getFullYear(),wk.getMonth(),1));render()};
+$('#modeMonth').onclick=()=>{const today=new Date();viewMode='month';wk=new Date(wk.getFullYear(),wk.getMonth(),1);selectedMonthDay=(wk.getFullYear()===today.getFullYear()&&wk.getMonth()===today.getMonth())?iso(today):iso(wk);render()};
 $('#monthGrid').onclick=e=>{const b=e.target.closest('[data-select]');if(b){selectedMonthDay=b.dataset.select;render()}};
 $('#monthDetail').onclick=e=>{const add=e.target.closest('[data-d]');if(add){openM(null,add.dataset.d);return}const it=e.target.closest('[data-id]');if(it){openM(it.dataset.id);return}if(e.target.closest('#monthGoDay')){wk=sow(parse(selectedMonthDay));viewMode='week';openedDay=selectedMonthDay;render()}};
 $('#addTop').onclick=()=>openM(null,viewMode==='month'?selectedMonthDay:iso(new Date()));
