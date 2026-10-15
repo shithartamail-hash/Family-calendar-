@@ -145,6 +145,13 @@ header{gap:9px;padding-top:15px}
 .tools #urgentTop{border:1px solid var(--urgent-border,#d8ac97);background:transparent;color:var(--urgent-ink);gap:5px;direction:rtl}
 .tools #urgentTop .urgent-mark{font-size:15px;font-weight:700;color:var(--urgent-ink)}
 @media(max-width:370px){.brand .brand-art{width:56px;height:44px}.brand h1{font-size:26px}.tools{gap:6px}.tools button,.tools #urgentTop{padding:5px 10px}}
+
+/* Keep the floating add button clear of the mindfulness tip */
+/* The floating + stays fixed, while the tip has a clear left-side gutter. */
+.daily-tip{padding-left:94px;min-height:106px;box-sizing:border-box}
+/* Give the bottom-most tip room to scroll fully above the floating control. */
+main{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px))}
+@media(max-width:370px){.daily-tip{padding-left:82px}}
 </style>
 </head>
 <body>
