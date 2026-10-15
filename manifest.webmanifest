@@ -1,0 +1,27 @@
+{
+  "name": "היומן המשפחתי שלנו – Sinai",
+  "short_name": "Sinai",
+  "description": "היומן המשפחתי של משפחת Sinai",
+  "lang": "he",
+  "dir": "rtl",
+  "id": "/Family-calendar-/",
+  "start_url": "/Family-calendar-/",
+  "scope": "/Family-calendar-/",
+  "display": "standalone",
+  "background_color": "#fff7ee",
+  "theme_color": "#fff7ee",
+  "icons": [
+    {
+      "src": "./icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}
