@@ -587,6 +587,8 @@ $('#themeToggle').onclick=()=>{
   themePref=themePref==='light'?'dark':'light';
   localStorage.setItem('sinai-theme',themePref);
   applyTheme();
+  const scheduleFrame=document.getElementById('scheduleFrame');
+  if(scheduleFrame && scheduleFrame.contentWindow){scheduleFrame.contentWindow.postMessage({type:'sinai-theme',theme:themePref},location.origin)}
 };
 applyTheme();
 
@@ -636,7 +638,7 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
   const who=btn.dataset.openSchedule;
   if(!pages[who])return;
   heading.textContent='מערכת השעות של '+(who==='tamara'?'תמרה':'יהונתן');
-  frame.src=pages[who];view.classList.add('on');view.setAttribute('aria-hidden','false');document.body.classList.add('schedule-open');
+  frame.src=pages[who]+'?theme='+encodeURIComponent(themePref);view.classList.add('on');view.setAttribute('aria-hidden','false');document.body.classList.add('schedule-open');
  }));
  document.getElementById('scheduleClose').addEventListener('click',close);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view.classList.contains('on'))close()});
