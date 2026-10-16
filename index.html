@@ -309,7 +309,7 @@ const SB_KEY='sb_publishable_TlZtdKg6YXzgggxFpBbPhQ_FghbB3Ap';
 const db=supabase.createClient(SB_URL,SB_KEY);
 
 const $=s=>document.querySelector(s);
-/* טיפ מיינדפולנס קצר, מתחלף כל ארבע שעות. */
+/* טיפ מיינדפולנס קצר, מתחלף כל שעתיים. */
 const SINAI_TIPS=[
   {kind:'נשימה',text:'לפני שמתחילים דבר חדש, קחו שלוש נשימות רגועות ושימו לב לאוויר שנכנס ויוצא.'},
   {kind:'נוכחות',text:'בחרו רגע אחד היום לעשות דבר אחד בלבד, בלי להסיח את הדעת.'},
@@ -328,19 +328,44 @@ const SINAI_TIPS=[
   {kind:'חמלה',text:'מותר להיות עייפים, חסרי סבלנות או לא מרוכזים. שימו לב לזה בלי לשפוט.'},
   {kind:'הקשבה',text:'נסו לשים לב לרגע שבו מישהו בבית מחייך, גם אם הוא חולף במהירות.'},
   {kind:'נשימה',text:'בפקק או בהמתנה, נסו לשים לב לשתי נשימות טבעיות במקום למהר למלא את השקט.'},
-  {kind:'נוכחות',text:'היום נסו לעשות פעולה יומיומית אחת קצת יותר לאט, ולשים לב לפרטים.'}
+  {kind:'נוכחות',text:'היום נסו לעשות פעולה יומיומית אחת קצת יותר לאט, ולשים לב לפרטים.'},
+  {kind:'קשב לגוף',text:'לפני שקמים מהכיסא, שימו לב למגע שלו בגב ולכפות הרגליים על הרצפה.'},
+  {kind:'האטה',text:'אפשר להמתין שנייה לפני שמגיבים. לפעמים השנייה הזו משנה את כל השיחה.'},
+  {kind:'נשימה',text:'קחו נשימה שקטה ונסו להרגיש היכן התנועה שלה מורגשת בגוף.'},
+  {kind:'חמלה עצמית',text:'כשמתגנבת ביקורת עצמית, שאלו אם אפשר לנסח אותה קצת יותר בעדינות.'},
+  {kind:'תשומת לב',text:'בפעם הבאה שתפתחו דלת, שימו לב לתחושה של היד על הידית.'},
+  {kind:'נוכחות',text:'בחרו ארוחה אחת שבה תניחו את הטלפון בצד לכמה דקות.'},
+  {kind:'הכרת תודה',text:'היזכרו במחווה קטנה שמישהו עשה עבורכם לאחרונה.'},
+  {kind:'סקרנות',text:'הסתכלו על משהו מוכר כאילו זו הפעם הראשונה שאתם רואים אותו.'},
+  {kind:'שחרור',text:'מחשבה היא לא בהכרח הוראה לפעולה. אפשר לתת לה לעבור.'},
+  {kind:'מנוחה',text:'נסו לקחת הפסקה קצרה בלי למלא אותה מיד בעוד מסך.'},
+  {kind:'הקשבה',text:'כשמישהו מספר לכם משהו, שימו לב לטון הקול ולא רק למילים.'},
+  {kind:'קשב לגוף',text:'בדקו אם הלסת מכווצת. אפשר לרכך אותה מעט בלי להתאמץ.'},
+  {kind:'נשימה',text:'בין שתי משימות, אפשר לעצור לנשיפה איטית ולתת לכתפיים לרדת.'},
+  {kind:'נוכחות',text:'בהליכה קצרה, נסו להרגיש כמה צעדים במקום לחשוב על היעד.'},
+  {kind:'חמלה',text:'גם לאחרים יש ימים עמוסים. נסו להשאיר מקום לאפשרות הזו.'},
+  {kind:'תשומת לב',text:'לרגע אחד, שימו לב לאור בחדר ולצללים שהוא יוצר.'},
+  {kind:'האטה',text:'לא חייבים להספיק הכול עכשיו. בחרו את הצעד הבא בלבד.'},
+  {kind:'הכרת תודה',text:'חשבו על משהו פשוט שקיים בחייכם ומקל על היום.'},
+  {kind:'שחרור',text:'אם תוכנית השתנתה, נסו לשים לב לתגובה שלכם לפני שאתם מגיבים אליה.'},
+  {kind:'הקשבה',text:'בשיחה היום, נסו להשאיר רגע קטן של שקט אחרי שהאחר מסיים לדבר.'},
+  {kind:'נוכחות',text:'במקלחת, אפשר להרגיש לרגע את טמפרטורת המים בלי לחשוב על המשך היום.'},
+  {kind:'חמלה עצמית',text:'בסוף היום, נסו לזהות דבר אחד שעשיתם כמיטב יכולתכם.'}
 ];
 let lastTipSlot='';
 function updateDailyTip(){
-  const slot=Math.floor(Date.now()/14400000);
-  if(String(slot)===lastTipSlot)return;
-  lastTipSlot=String(slot);
+  const slot=Math.floor(Date.now()/7200000);
+  const textEl=$('#tipText'), categoryEl=$('#tipCategory');
+  if(!textEl||!categoryEl||String(slot)===lastTipSlot)return;
   const tip=SINAI_TIPS[((slot%SINAI_TIPS.length)+SINAI_TIPS.length)%SINAI_TIPS.length];
-  $('#tipText').textContent=tip.text;
-  $('#tipCategory').textContent=tip.kind;
+  textEl.textContent=tip.text;
+  categoryEl.textContent=tip.kind;
+  lastTipSlot=String(slot);
 }
 updateDailyTip();
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)updateDailyTip()});
+window.addEventListener('focus',updateDailyTip);
+window.addEventListener('pageshow',updateDailyTip);
 setInterval(updateDailyTip,60000);
 
 const DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
