@@ -17,6 +17,15 @@
 .schedule-display-top{display:flex;align-items:center;justify-content:space-between;color:#777;font-size:13px}
 .schedule-display iframe{width:100%;min-height:0;flex:1;border:0;background:#fcfbf7}
 @media(max-width:900px){.schedule-display{min-height:440px}}
+
+/* A schedule must fit the landscape display without vertical scrolling. */
+.screen.schedule-mode{height:100dvh;min-height:0;max-height:100dvh;margin:0 auto;overflow:hidden;gap:9px;padding-top:15px;padding-bottom:10px}
+.screen.schedule-mode .top{padding-bottom:9px;gap:15px}
+.screen.schedule-mode .schedule-display{min-height:0;overflow:hidden;gap:4px}
+.screen.schedule-mode .schedule-display-top{flex-shrink:0;font-size:12px}
+.screen.schedule-mode .schedule-display iframe{display:block;min-height:0;height:100%;overflow:hidden}
+.screen.schedule-mode .foot{flex-shrink:0}
+@media(max-width:850px){.screen.schedule-mode{width:1450px}}
 </style></head>
 <body><section id="login" class="login" hidden><h1>היומן המשפחתי שלנו</h1><p>התחברות חד־פעמית למסך התצוגה</p><form id="loginForm"><input type="email" id="email" placeholder="אימייל" autocomplete="username" required><input type="password" id="password" placeholder="סיסמה" autocomplete="current-password" required><p class="error" id="loginError"></p><button type="submit">התחברות</button></form></section><section id="denied" class="login" hidden><h1>אין הרשאה</h1><p>המשתמש אינו מורשה לצפות ביומן המשפחתי.</p><button id="deniedLogout">יציאה</button></section><main class="screen" id="screen" hidden><span id="todayCandles" aria-live="polite"></span><header class="top"><div><h1>היומן המשפחתי שלנו</h1><div class="range" id="range"></div></div><section><div class="smallheading">הבדיחה היומית</div><div class="joke" id="joke"></div></section><section><div class="weather"><div class="symbol">○</div><div><strong>—°</strong><p>מזג אוויר יתחבר בהמשך</p><p>המלצת לבוש תופיע כאן</p></div></div></section><nav class="controls"><div class="line"><button id="prev" aria-label="הקודם">→</button><button id="today">היום</button><button id="next" aria-label="הבא">←</button></div><div class="line"><button id="week" class="active">שבוע</button><button id="month">חודש</button></div></nav></header><div class="week" id="weekGrid"></div><div class="month" id="monthGrid" hidden></div><section id="childSchedule" class="schedule-display" aria-label="מערכת השעות"><div class="schedule-display-top"><strong id="childScheduleTitle"></strong><span>לוח השיעורים השבועי</span></div><iframe id="childScheduleFrame" title="מערכת השעות"></iframe></section><section class="alert" id="alert" hidden><span>חשוב!</span><span id="alertText"></span></section><footer class="foot"><div class="authbar"><span id="syncStatus" class="status">מתחבר…</span><button id="logout" hidden aria-hidden="true">יציאה</button></div><nav class="schedule-footer-buttons" aria-label="מעבר למערכות שעות"><button type="button" id="scheduleCalendar" class="active">יומן</button><button type="button" data-child-schedule="tamara">תמרה</button><button type="button" data-child-schedule="yehonatan">יהונתן</button></nav></footer></main>
 <script>
@@ -223,7 +232,7 @@ enter();
  const pages={tamara:'tamara_schedule.html',yehonatan:'yehonatan_schedule.html'};
  let original={week:false,month:true};
  function back(){
-   wrap.classList.remove('on');wrap.style.display='none';frame.removeAttribute('src');
+   wrap.classList.remove('on');wrap.style.display='none';document.getElementById('screen').classList.remove('schedule-mode');frame.removeAttribute('src');
    week.hidden=original.week;month.hidden=original.month;
    calendar.classList.add('active');buttons.forEach(b=>b.classList.remove('active'));
  }
@@ -232,13 +241,13 @@ enter();
    if(!wrap.classList.contains('on'))original={week:week.hidden,month:month.hidden};
    week.hidden=true;month.hidden=true;
    frame.src=pages[which];title.textContent='מערכת השעות של '+(which==='tamara'?'תמרה':'יהונתן');
-   wrap.classList.add('on');wrap.style.display='flex';
+   wrap.classList.add('on');wrap.style.display='flex';document.getElementById('screen').classList.add('schedule-mode');
    calendar.classList.remove('active');buttons.forEach(b=>b.classList.toggle('active',b.dataset.childSchedule===which));
  }
  calendar.addEventListener('click',back);
  buttons.forEach(btn=>btn.addEventListener('click',()=>wrap.classList.contains('on')&&btn.classList.contains('active')?back():open(btn.dataset.childSchedule)));
  // Calendar navigation remains available; return to it if its controls are used.
- ['prev','next','today','week','month'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{if(wrap.classList.contains('on')){wrap.classList.remove('on');wrap.style.display='none';frame.removeAttribute('src');calendar.classList.add('active');buttons.forEach(b=>b.classList.remove('active'));}}));
+ ['prev','next','today','week','month'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{if(wrap.classList.contains('on')){wrap.classList.remove('on');wrap.style.display='none';document.getElementById('screen').classList.remove('schedule-mode');frame.removeAttribute('src');calendar.classList.add('active');buttons.forEach(b=>b.classList.remove('active'));}}));
 })();
 </script>
 </body></html>
