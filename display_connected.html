@@ -7,8 +7,18 @@
 .screen{position:relative}
 #todayCandles{position:absolute;top:8px;left:34px;direction:rtl;font-size:12px;font-weight:600;color:#686868;white-space:nowrap;line-height:1.3}
 #todayCandles:empty{display:none}
+
+/* Child timetables: replace the content area, preserve the upper dashboard. */
+.schedule-footer-buttons{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.schedule-footer-buttons button{font-size:13px;border:1px solid #cfcac1;border-radius:18px;padding:6px 12px;background:transparent}
+.schedule-footer-buttons button.active{background:#283342;border-color:#283342;color:#fff}
+.schedule-display{flex:1;min-height:530px;display:none;flex-direction:column;gap:8px}
+.schedule-display.on{display:flex}
+.schedule-display-top{display:flex;align-items:center;justify-content:space-between;color:#777;font-size:13px}
+.schedule-display iframe{width:100%;min-height:0;flex:1;border:0;background:#fcfbf7}
+@media(max-width:900px){.schedule-display{min-height:440px}}
 </style></head>
-<body><section id="login" class="login" hidden><h1>היומן המשפחתי שלנו</h1><p>התחברות חד־פעמית למסך התצוגה</p><form id="loginForm"><input type="email" id="email" placeholder="אימייל" autocomplete="username" required><input type="password" id="password" placeholder="סיסמה" autocomplete="current-password" required><p class="error" id="loginError"></p><button type="submit">התחברות</button></form></section><section id="denied" class="login" hidden><h1>אין הרשאה</h1><p>המשתמש אינו מורשה לצפות ביומן המשפחתי.</p><button id="deniedLogout">יציאה</button></section><main class="screen" id="screen" hidden><span id="todayCandles" aria-live="polite"></span><header class="top"><div><h1>היומן המשפחתי שלנו</h1><div class="range" id="range"></div></div><section><div class="smallheading">הבדיחה היומית</div><div class="joke" id="joke"></div></section><section><div class="weather"><div class="symbol">○</div><div><strong>—°</strong><p>מזג אוויר יתחבר בהמשך</p><p>המלצת לבוש תופיע כאן</p></div></div></section><nav class="controls"><div class="line"><button id="prev" aria-label="הקודם">→</button><button id="today">היום</button><button id="next" aria-label="הבא">←</button></div><div class="line"><button id="week" class="active">שבוע</button><button id="month">חודש</button></div></nav></header><div class="week" id="weekGrid"></div><div class="month" id="monthGrid" hidden></div><section class="alert" id="alert" hidden><span>חשוב!</span><span id="alertText"></span></section><footer class="foot"><div class="authbar"><span id="syncStatus" class="status">מתחבר…</span><button id="logout">יציאה</button></div><span>מזג האוויר יחובר בהמשך</span></footer></main>
+<body><section id="login" class="login" hidden><h1>היומן המשפחתי שלנו</h1><p>התחברות חד־פעמית למסך התצוגה</p><form id="loginForm"><input type="email" id="email" placeholder="אימייל" autocomplete="username" required><input type="password" id="password" placeholder="סיסמה" autocomplete="current-password" required><p class="error" id="loginError"></p><button type="submit">התחברות</button></form></section><section id="denied" class="login" hidden><h1>אין הרשאה</h1><p>המשתמש אינו מורשה לצפות ביומן המשפחתי.</p><button id="deniedLogout">יציאה</button></section><main class="screen" id="screen" hidden><span id="todayCandles" aria-live="polite"></span><header class="top"><div><h1>היומן המשפחתי שלנו</h1><div class="range" id="range"></div></div><section><div class="smallheading">הבדיחה היומית</div><div class="joke" id="joke"></div></section><section><div class="weather"><div class="symbol">○</div><div><strong>—°</strong><p>מזג אוויר יתחבר בהמשך</p><p>המלצת לבוש תופיע כאן</p></div></div></section><nav class="controls"><div class="line"><button id="prev" aria-label="הקודם">→</button><button id="today">היום</button><button id="next" aria-label="הבא">←</button></div><div class="line"><button id="week" class="active">שבוע</button><button id="month">חודש</button></div></nav></header><div class="week" id="weekGrid"></div><div class="month" id="monthGrid" hidden></div><section id="childSchedule" class="schedule-display" aria-label="מערכת השעות"><div class="schedule-display-top"><strong id="childScheduleTitle"></strong><span>לוח השיעורים השבועי</span></div><iframe id="childScheduleFrame" title="מערכת השעות"></iframe></section><section class="alert" id="alert" hidden><span>חשוב!</span><span id="alertText"></span></section><footer class="foot"><div class="authbar"><span id="syncStatus" class="status">מתחבר…</span><button id="logout" hidden aria-hidden="true">יציאה</button></div><nav class="schedule-footer-buttons" aria-label="מעבר למערכות שעות"><button type="button" id="scheduleCalendar" class="active">יומן</button><button type="button" data-child-schedule="tamara">תמרה</button><button type="button" data-child-schedule="yehonatan">יהונתן</button></nav></footer></main>
 <script>
 /* Sinai candle-lighting times for Geulim, Israel. Visible only on Fridays. */
 window.SinaiCandles=(()=>{
@@ -203,4 +213,32 @@ setInterval(()=>{if(active)updateTodayCandles()},60000);
 setInterval(()=>{if(active)load()},60000);
 setInterval(()=>{if(active){draw();if(!channel)setupRealtime()}},300000);
 enter();
-</script></body></html>
+</script>
+<script>
+(()=>{
+ const wrap=document.getElementById('childSchedule'),frame=document.getElementById('childScheduleFrame');
+ const week=document.getElementById('weekGrid'),month=document.getElementById('monthGrid');
+ const title=document.getElementById('childScheduleTitle'),calendar=document.getElementById('scheduleCalendar');
+ const buttons=[...document.querySelectorAll('[data-child-schedule]')];
+ const pages={tamara:'tamara_schedule.html',yehonatan:'yehonatan_schedule.html'};
+ let original={week:false,month:true};
+ function back(){
+   wrap.classList.remove('on');wrap.style.display='none';frame.removeAttribute('src');
+   week.hidden=original.week;month.hidden=original.month;
+   calendar.classList.add('active');buttons.forEach(b=>b.classList.remove('active'));
+ }
+ function open(which){
+   if(!pages[which])return;
+   if(!wrap.classList.contains('on'))original={week:week.hidden,month:month.hidden};
+   week.hidden=true;month.hidden=true;
+   frame.src=pages[which];title.textContent='מערכת השעות של '+(which==='tamara'?'תמרה':'יהונתן');
+   wrap.classList.add('on');wrap.style.display='flex';
+   calendar.classList.remove('active');buttons.forEach(b=>b.classList.toggle('active',b.dataset.childSchedule===which));
+ }
+ calendar.addEventListener('click',back);
+ buttons.forEach(btn=>btn.addEventListener('click',()=>wrap.classList.contains('on')&&btn.classList.contains('active')?back():open(btn.dataset.childSchedule)));
+ // Calendar navigation remains available; return to it if its controls are used.
+ ['prev','next','today','week','month'].forEach(id=>document.getElementById(id).addEventListener('click',()=>{if(wrap.classList.contains('on')){wrap.classList.remove('on');wrap.style.display='none';frame.removeAttribute('src');calendar.classList.add('active');buttons.forEach(b=>b.classList.remove('active'));}}));
+})();
+</script>
+</body></html>
