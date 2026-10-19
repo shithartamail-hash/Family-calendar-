@@ -178,6 +178,8 @@ main{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px))}
 .schedule-back{border:1px solid var(--line);border-radius:22px;padding:9px 15px;background:var(--card);color:var(--ink);font:inherit;min-height:40px}
 .schedule-frame{width:100%;flex:1;min-height:0;border:0;background:#fcfbf7}
 body.schedule-open{overflow:hidden}
+.child-options{display:flex;gap:10px;justify-content:center;align-items:center;padding:18px;flex-wrap:wrap;background:var(--bg)}
+.child-options[hidden]{display:none!important}.child-options button{background:var(--card);border:1px solid var(--line);border-radius:14px;color:var(--ink);padding:18px 15px;font:inherit;font-weight:600;min-width:125px}
 </style>
 </head>
 <body>
@@ -512,8 +514,7 @@ function render(){
    h+=`<section class="day${ds===today?' today':''}"><div class="day-toggle" role="button" tabindex="0" data-open="${ds}" aria-expanded="${isOpen}"><span class="day-title"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small>${SinaiHolidays.get(ds).map(n=>`<span class="holiday-label">${esc(n)}</span>`).join('')}</span><span class="preview">${brief}${!isOpen&&events.length>2?`<span class="more">ועוד ${events.length-2} אירועים</span>`:''}</span><span class="toggle-arrow">${isOpen?'⌃':'⌄'}</span></div>`;
    if(isOpen){
     h+=`<div class="day-detail">`+events.map(it=>{const c=esc(mem(it.m).color);if(it.type==='task')return `<div class="it task${it.done?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${it.done?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`;return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${esc(it.time)}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">↻</span>':''}</div>`}).join('');
-    const heart=S.rewards.some(r=>r.date===ds&&r.child==='tamara'),crown=S.rewards.some(r=>r.date===ds&&r.child==='yehonatan');
-    h+=`<div class="reward-controls"><button class="rw${heart?' earned':''}" data-day="${ds}" data-child="tamara" aria-pressed="${heart}">♥ תמרה</button><button class="rw${crown?' earned':''}" data-day="${ds}" data-child="yehonatan" aria-pressed="${crown}">♛ יהונתן</button></div><button class="add" data-d="${ds}">+ הוסף ליום הזה</button></div>`;
+    h+=`<button class="add" data-d="${ds}">+ הוסף ליום הזה</button></div>`;
    }
    h+='</section>';
   }
@@ -632,14 +633,22 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
 <script>
 (()=>{
  const frame=document.getElementById('scheduleFrame'),view=document.getElementById('scheduleView'),heading=document.getElementById('scheduleHeading');
+ const opts=document.createElement('div');opts.className='child-options';opts.id='childOptions';opts.hidden=true;opts.innerHTML='<button type="button" data-choice="schedule">מערכת שעות</button><button type="button" data-choice="daily">טבלה יומית</button>';
+ document.querySelector('.schedule-bar').after(opts);
  const pages={tamara:'tamara_schedule.html',yehonatan:'yehonatan_schedule.html'};
- function close(){view.classList.remove('on');view.setAttribute('aria-hidden','true');document.body.classList.remove('schedule-open');frame.removeAttribute('src')}
+ let chosen=null;
+ function close(){view.classList.remove('on');view.setAttribute('aria-hidden','true');document.body.classList.remove('schedule-open');frame.removeAttribute('src');opts.hidden=true;chosen=null}
  document.querySelectorAll('[data-open-schedule]').forEach(btn=>btn.addEventListener('click',()=>{
-  const who=btn.dataset.openSchedule;
-  if(!pages[who])return;
-  heading.textContent='מערכת השעות של '+(who==='tamara'?'תמרה':'יהונתן');
-  frame.src=pages[who]+'?theme='+encodeURIComponent(themePref);view.classList.add('on');view.setAttribute('aria-hidden','false');document.body.classList.add('schedule-open');
+  chosen=btn.dataset.openSchedule;if(!pages[chosen])return;
+  heading.textContent='המרחב של '+(chosen==='tamara'?'תמרה':'יהונתן');
+  frame.removeAttribute('src');frame.style.display='none';opts.hidden=false;
+  view.classList.add('on');view.setAttribute('aria-hidden','false');document.body.classList.add('schedule-open');
  }));
+ opts.addEventListener('click',e=>{const item=e.target.closest('[data-choice]');if(!item||!chosen)return;
+  const type=item.dataset.choice;heading.textContent=(type==='daily'?'הטבלה היומית של ':'מערכת השעות של ')+(chosen==='tamara'?'תמרה':'יהונתן');
+  frame.src=type==='daily'?'daily_routine.html?child='+chosen+'&theme='+encodeURIComponent(themePref):pages[chosen]+'?theme='+encodeURIComponent(themePref);
+  frame.style.display='block';opts.hidden=true;
+ });
  document.getElementById('scheduleClose').addEventListener('click',close);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&view.classList.contains('on'))close()});
 })();
