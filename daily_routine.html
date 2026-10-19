@@ -7,8 +7,41 @@
 .editor-backdrop{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:#0007;z-index:10;padding:20px}.editor-backdrop.open{display:flex}.editor{background:var(--tile);color:var(--ink);border-radius:17px;padding:20px;width:min(460px,96vw);box-shadow:0 10px 40px #0003}.editor h2{font-size:18px;margin:0 0 12px}.editor textarea{width:100%;min-height:100px;resize:vertical;font:inherit;font-size:16px;line-height:1.5;padding:11px;border:1px solid var(--stroke);border-radius:10px;background:var(--bg);color:var(--ink)}.editor-actions{display:flex;gap:8px;margin-top:12px}.editor-actions button{flex:1;padding:11px;border-radius:9px;border:1px solid var(--stroke);background:var(--head);color:var(--ink);font:inherit}.editor-actions button.save{background:var(--accent);color:#fff}.error{color:#bf5c51;min-height:16px;font-size:12px;margin-top:6px}
 @media(max-width:730px){.page{gap:6px;padding:8px}main{gap:3px;min-width:910px;grid-template-columns:98px repeat(7,minmax(112px,1fr));grid-template-rows:42px repeat(4,minmax(0,1fr)) 57px}.head,.label,.cell,.reward{border-radius:6px;padding:3px}.head{font-size:10px}.head .dt{font-size:9px}.label{font-size:11px;position:sticky;right:0;z-index:2}.label .ico{font-size:19px}.cell{font-size:12px}h1{font-size:17px}.nav button{padding:6px;font-size:11px}.tip{font-size:10px}}
 @media(max-height:480px){.page{gap:5px;padding-top:7px;padding-bottom:5px}.tip{display:none}header h1{font-size:16px}.nav button{min-height:30px;padding:4px 8px}}
-</style></head><body><div class="page"><header><div><h1 id="title">הטבלה היומית</h1><small id="subtitle">ממלאים באפליקציה · מוצג גם בלוח המשפחתי</small></div><div class="nav"><button type="button" id="back" aria-label="שבוע קודם">→</button><button type="button" id="now">השבוע</button><button type="button" id="forward" aria-label="שבוע הבא">←</button></div></header><div class="tip" id="message" role="status">טוען את השבוע…</div><div class="routine-scroll"><main id="table" aria-label="טבלה יומית לשבוע"></main></div></div>
-<div class="editor-backdrop" id="backdrop"><div class="editor" role="dialog" aria-modal="true" aria-labelledby="editorTitle"><h2 id="editorTitle">עריכת יום</h2><textarea id="value" maxlength="500" placeholder="אפשר לכתוב כאן…"></textarea><div class="error" id="editorError"></div><div class="editor-actions"><button id="cancel">ביטול</button><button id="clear">ניקוי</button><button class="save" id="save">שמירה</button></div></div></div>
+.share-edit{display:flex;gap:9px;align-items:center;flex-wrap:wrap;color:var(--ink);font-size:14px;margin:10px 0}.share-edit input{width:19px;height:19px;accent-color:var(--accent)}.share-edit small{flex-basis:100%;font-size:11px;color:var(--muted);margin-inline-start:28px}.share-edit[hidden]{display:none!important}
+
+/* Weekly quick planner: only the inner planner scrolls, not Sinai's page. */
+.quick-backdrop{position:fixed;inset:0;z-index:20;display:none;background:var(--bg);color:var(--ink);flex-direction:column;padding:max(9px,env(safe-area-inset-top)) 12px max(9px,env(safe-area-inset-bottom));gap:9px}
+.quick-backdrop.open{display:flex}
+.quick-top{display:flex;align-items:center;gap:9px;justify-content:space-between;flex-wrap:wrap;flex:none}
+.quick-top h2{font-size:clamp(16px,2vw,22px);margin:0}
+.quick-top small{display:block;margin-top:3px}
+.quick-actions{display:flex;gap:7px;align-items:center;flex-wrap:wrap}
+.quick-actions button{font:inherit;font-size:13px;border:1px solid var(--stroke);border-radius:10px;background:var(--tile);color:var(--ink);padding:8px 11px;min-height:38px}
+.quick-actions button.primary{background:var(--accent);color:#fff;font-weight:600}
+.quick-actions button:disabled{opacity:.55}
+.quick-msg{font-size:12px;color:var(--muted);min-height:16px;flex:none}
+.quick-scroll{flex:1;overflow:auto;min-height:0;overscroll-behavior:contain}
+.quick-days{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,275px),1fr));gap:10px;align-items:start;padding-bottom:8px}
+.quick-day{border:1px solid var(--stroke);background:var(--tile);border-radius:14px;padding:11px;min-width:0;display:grid;gap:8px}
+.quick-day.today{box-shadow:inset 0 0 0 2px var(--accent)}
+.quick-day h3{margin:0;font-size:15px;color:var(--ink);border-bottom:1px solid var(--stroke);padding-bottom:7px}
+.quick-field{display:grid;gap:4px}
+.quick-field label{font-size:12px;font-weight:600;color:var(--ink);display:flex;justify-content:space-between;gap:5px;align-items:center}
+.quick-field input[type=text]{width:100%;font:inherit;font-size:16px;border:1px solid var(--stroke);background:var(--bg);color:var(--ink);border-radius:8px;padding:7px 8px;min-height:36px}
+.quick-share{font-size:11px;font-weight:400;color:var(--muted);display:inline-flex;align-items:center;gap:4px;white-space:nowrap;cursor:pointer}
+.quick-share input{accent-color:var(--accent);width:15px;height:15px}
+.quick-field.modified input[type=text]{border-color:var(--accent)}
+.quick-help{font-size:11px;color:var(--muted);flex:none}
+@media(max-width:600px){.page>header{flex-wrap:wrap}.page>header .nav{width:100%;justify-content:flex-start;flex-wrap:wrap}.page>header .nav button:last-child{margin-inline-start:auto}.quick-backdrop{padding:10px 9px}.quick-day{padding:9px}.quick-actions button{font-size:12px;padding:7px 9px}}
+</style></head><body><div class="page"><header><div><h1 id="title">הטבלה היומית</h1><small id="subtitle">ממלאים באפליקציה · מוצג גם בלוח המשפחתי</small></div><div class="nav"><button type="button" id="back" aria-label="שבוע קודם">→</button><button type="button" id="now">השבוע</button><button type="button" id="forward" aria-label="שבוע הבא">←</button><button type="button" id="quickOpen">תכנון שבועי מהיר</button></div></header><div class="tip" id="message" role="status">טוען את השבוע…</div><div class="routine-scroll"><main id="table" aria-label="טבלה יומית לשבוע"></main></div></div>
+<div class="editor-backdrop" id="backdrop"><div class="editor" role="dialog" aria-modal="true" aria-labelledby="editorTitle"><h2 id="editorTitle">עריכת יום</h2><textarea id="value" maxlength="500" placeholder="אפשר לכתוב כאן…"></textarea><label class="share-edit" id="shareEditWrap" hidden><input type="checkbox" id="shareEdit" checked> החל גם על הילד השני <small id="shareEditNote">שומר את אותו התוכן לשני הילדים</small></label><div class="error" id="editorError"></div><div class="editor-actions"><button id="cancel">ביטול</button><button id="clear">ניקוי</button><button class="save" id="save">שמירה</button></div></div></div>
+
+<div class="quick-backdrop" id="quickBackdrop" role="dialog" aria-modal="true" aria-labelledby="quickTitle" aria-hidden="true">
+ <div class="quick-top"><div><h2 id="quickTitle">תכנון שבועי מהיר</h2><small id="quickRange"></small></div><div class="quick-actions"><button type="button" id="quickCopy">העתק מהשבוע הקודם</button><button type="button" id="quickSave" class="primary">שמור שינויים</button><button type="button" id="quickClose">סגירה ✕</button></div></div>
+ <div class="quick-msg" id="quickMessage" role="status">ממלאים רק מה שצריך; הסימונים האחרים נשמרים.</div>
+ <div class="quick-scroll"><div class="quick-days" id="quickDays"></div></div>
+ <div class="quick-help">אפשר לסמן ״גם לילד השני״ ליד כל שדה. הלב והכתר מנוהלים בנפרד בטבלה ואינם מועתקים.</div>
+</div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <script>
 const SB_URL='https://pkghylgchdnykgamahjh.supabase.co',SB_KEY='sb_publishable_TlZtdKg6YXzgggxFpBbPhQ_FghbB3Ap';
@@ -21,12 +54,124 @@ function theme(){const explicit=params.get('theme');let t=explicit;if(!['light',
 function row(date){return entries.find(r=>r.plan_date===date&&r.child===child)||{child,plan_date:date,morning:'',food:'',pickup:'',afternoon:''}}
 function render(){const daysArr=thisWeek();const todayKey=todayIsrael();let html='<div class="corner"></div>';daysArr.forEach((d,i)=>{const key=dateOnly(d);html+=`<div class="head ${key===todayKey?'today':''}">${days[i]}<span class="dt">${d.getDate()}/${d.getMonth()+1}</span></div>`});fields.forEach(f=>{html+=`<div class="label" title="${f.title}" aria-label="${f.title}"><span class="ico" aria-hidden="true">${f.icon}</span></div>`;daysArr.forEach(d=>{const key=dateOnly(d),v=row(key)[f.key]||'';html+=`<button class="cell ${v?'':'empty'} ${key===todayKey?'today':''}" ${readOnly?'disabled':''} data-date="${key}" data-field="${f.key}" aria-label="${f.title}, ${key}">${esc(v)}</button>`})});html+=`<div class="label" title="${child==='tamara'?'הלב של תמרה':'הכתר של יהונתן'}"><span class="ico" aria-hidden="true">${child==='tamara'?'♡':'♕'}</span></div>`;daysArr.forEach(d=>{const key=dateOnly(d),earned=rewards.some(r=>r.reward_date===key&&r.child===child);html+=`<button class="reward ${child==='yehonatan'?'crown':''} ${earned?'earned':''} ${key===todayKey?'today':''}" data-reward="${key}" ${readOnly?'disabled':''} aria-label="${earned?'ביטול':'מתן'} ${child==='tamara'?'לב':'כתר'} ביום ${key}" aria-pressed="${earned}">${child==='tamara'?(earned?'♥':'♡'):(earned?'♛':'♕')}</button>`});$('table').innerHTML=html}
 async function refresh(){const ds=dateOnly(anchor),de=dateOnly(add(anchor,6));try{const [p,r]=await Promise.all([db.from('child_daily_plans').select('*').eq('child',child).gte('plan_date',ds).lte('plan_date',de),db.from('daily_rewards').select('id,reward_date,child').eq('child',child).gte('reward_date',ds).lte('reward_date',de)]);if(p.error)throw p.error;if(r.error)throw r.error;entries=p.data||[];rewards=r.data||[];$('message').textContent=readOnly?'הנתונים מתעדכנים אוטומטית':'לחצו על משבצת כדי לערוך · אפשר לעבור בין שבועות';render()}catch(err){$('message').textContent='לא ניתן לטעון את הטבלה: '+err.message}}
-$('table').addEventListener('click',async ev=>{if(readOnly||busy)return;const cell=ev.target.closest('[data-field]');if(cell){editing={date:cell.dataset.date,field:cell.dataset.field};$('editorTitle').textContent=kid+' · '+fields.find(f=>f.key===editing.field).title+' · '+editing.date.split('-').reverse().join('/');$('value').value=row(editing.date)[editing.field]||'';$('editorError').textContent='';$('backdrop').classList.add('open');$('value').focus();return}const btn=ev.target.closest('[data-reward]');if(btn){busy=true;btn.disabled=true;const date=btn.dataset.reward,existing=rewards.find(r=>r.child===child&&r.reward_date===date);const res=existing?await db.from('daily_rewards').delete().eq('id',existing.id):await db.from('daily_rewards').insert({child,reward_date:date});if(res.error)alert('שמירת הסימון נכשלה: '+res.error.message);await refresh();busy=false}});
+$('table').addEventListener('click',async ev=>{if(readOnly||busy)return;const cell=ev.target.closest('[data-field]');if(cell){editing={date:cell.dataset.date,field:cell.dataset.field};$('editorTitle').textContent=kid+' · '+fields.find(f=>f.key===editing.field).title+' · '+editing.date.split('-').reverse().join('/');$('value').value=row(editing.date)[editing.field]||'';$('editorError').textContent='';
+  const shared=fields.some(f=>f.key===editing.field);$('shareEditWrap').hidden=!shared;
+  $('shareEdit').checked=false;
+  $('shareEditNote').textContent='כשהתיבה מסומנת, אותו ערך יישמר גם אצל '+(child==='tamara'?'יהונתן':'תמרה')+'; פרטים אחרים שלו לא ישתנו.';
+  if(shared){
+    const peer=child==='tamara'?'yehonatan':'tamara',date=editing.date,field=editing.field;
+    const otherResult=await db.from('child_daily_plans').select(field).eq('child',peer).eq('plan_date',date).maybeSingle();
+    if(editing?.date===date&&editing?.field===field){
+      if(otherResult.error){$('shareEdit').checked=false;$('shareEditNote').textContent='לא ניתן לבדוק כרגע את ערך הילד השני. יש לבחור שיתוף באופן ידני.'}
+      else if(otherResult.data?.[field]&&otherResult.data[field]!==$('value').value){
+        $('shareEdit').checked=false;
+        $('shareEditNote').textContent='לילד השני כבר יש ערך שונה בשדה הזה. סימון התיבה יחליף אותו.';
+      }
+    }
+  }$('backdrop').classList.add('open');$('value').focus();return}const btn=ev.target.closest('[data-reward]');if(btn){busy=true;btn.disabled=true;const date=btn.dataset.reward,existing=rewards.find(r=>r.child===child&&r.reward_date===date);const res=existing?await db.from('daily_rewards').delete().eq('id',existing.id):await db.from('daily_rewards').insert({child,reward_date:date});if(res.error)alert('שמירת הסימון נכשלה: '+res.error.message);await refresh();busy=false}});
 function closeEditor(){$('backdrop').classList.remove('open');editing=null}
 $('cancel').onclick=closeEditor;$('backdrop').addEventListener('click',e=>{if(e.target===$('backdrop'))closeEditor()});
 $('clear').onclick=()=>{$('value').value='';$('value').focus()};
-$('save').onclick=async()=>{if(!editing||busy)return;busy=true;$('save').disabled=true;const current=row(editing.date);const payload={child,plan_date:editing.date,morning:current.morning||'',food:current.food||'',pickup:current.pickup||'',afternoon:current.afternoon||'',[editing.field]:$('value').value.trim(),updated_at:new Date().toISOString()};const result=await db.from('child_daily_plans').upsert(payload,{onConflict:'child,plan_date'});if(result.error){$('editorError').textContent=result.error.message}else{closeEditor();await refresh()}busy=false;$('save').disabled=false};
+$('save').onclick=async()=>{
+ if(!editing||busy)return;
+ busy=true;$('save').disabled=true;
+ const current=row(editing.date),value=$('value').value.trim();
+ const payload={child,plan_date:editing.date,morning:current.morning||'',food:current.food||'',pickup:current.pickup||'',afternoon:current.afternoon||'',[editing.field]:value,updated_at:new Date().toISOString()};
+ let result=await db.from('child_daily_plans').upsert(payload,{onConflict:'child,plan_date'});
+ if(!result.error&&fields.some(f=>f.key===editing.field)&&$('shareEdit').checked){
+   const other=child==='tamara'?'yehonatan':'tamara';
+   const found=await db.from('child_daily_plans').select('*').eq('child',other).eq('plan_date',editing.date).maybeSingle();
+   if(found.error){result={error:found.error}}
+   else {
+     const prev=found.data||{};
+     const peer={child:other,plan_date:editing.date,morning:prev.morning||'',food:prev.food||'',pickup:prev.pickup||'',afternoon:prev.afternoon||'',[editing.field]:value,updated_at:new Date().toISOString()};
+     result=await db.from('child_daily_plans').upsert(peer,{onConflict:'child,plan_date'});
+   }
+ }
+ if(result.error){$('editorError').textContent='השמירה נכשלה בחלקה או במלואה: '+result.error.message;await refresh()}
+ else {closeEditor();await refresh()}
+ busy=false;$('save').disabled=false;
+};
 $('back').onclick=()=>{anchor=add(anchor,-7);refresh()};$('forward').onclick=()=>{anchor=add(anchor,7);refresh()};$('now').onclick=()=>{anchor=sow(new Date());refresh()};
+
+// Quick planner: draft for all seven dates; writes only changed fields.
+let quickDraft={},quickOriginal={},quickShare={},quickBusy=false;
+const clone=v=>JSON.parse(JSON.stringify(v));
+const otherChild=()=>child==='tamara'?'yehonatan':'tamara';
+function quickKey(date,field){return date+'|'+field}
+function quickChanged(date,field){return (quickDraft[date]?.[field]??'')!==(quickOriginal[date]?.[field]??'')}
+function quickSetMessage(s,isError=false){$('quickMessage').textContent=s;$('quickMessage').style.color=isError?'#bf5c51':'var(--muted)'}
+async function quickOpen(){
+ if(readOnly)return;
+ if(quickBusy)return;
+ $('quickBackdrop').classList.add('open');$('quickBackdrop').setAttribute('aria-hidden','false');
+ quickSetMessage('טוען את נתוני השבוע…');$('quickDays').innerHTML='';
+ const dates=thisWeek(),from=dateOnly(dates[0]),to=dateOnly(dates[6]);
+ $('quickTitle').textContent='תכנון שבועי מהיר · '+kid;
+ $('quickRange').textContent=`${dates[0].getDate()}/${dates[0].getMonth()+1}–${dates[6].getDate()}/${dates[6].getMonth()+1}`;
+ try{
+   const {data,error}=await db.from('child_daily_plans').select('*').eq('child',child).gte('plan_date',from).lte('plan_date',to);
+   if(error)throw error;
+   quickOriginal={};quickDraft={};quickShare={};
+   dates.forEach(d=>{const dt=dateOnly(d),r=(data||[]).find(x=>x.plan_date===dt)||{};quickOriginal[dt]={};fields.forEach(f=>quickOriginal[dt][f.key]=r[f.key]||'');quickDraft[dt]={...quickOriginal[dt]}});
+   quickRender();quickSetMessage('השינויים נשמרים רק בלחיצה על ״שמור שינויים״.');
+ }catch(e){quickSetMessage('טעינת התכנון נכשלה: '+e.message,true)}
+}
+function quickRender(){
+ const todayKey=todayIsrael();
+ $('quickDays').innerHTML=thisWeek().map((d,i)=>{
+   const date=dateOnly(d),r=quickDraft[date]||{};
+   return `<section class="quick-day ${date===todayKey?'today':''}"><h3>${days[i]} · ${d.getDate()}/${d.getMonth()+1}</h3>${fields.map(f=>{
+     const qk=quickKey(date,f.key);
+     return `<div class="quick-field ${quickChanged(date,f.key)?'modified':''}"><label for="quick-${i}-${f.key}"><span>${f.icon} ${f.title}</span><span class="quick-share"><input type="checkbox" data-quick-share="${qk}" ${quickShare[qk]?'checked':''}> גם לילד השני</span></label><input id="quick-${i}-${f.key}" type="text" data-quick-date="${date}" data-quick-field="${f.key}" maxlength="500" value="${esc(r[f.key]||'')}"></div>`}).join('')}</section>`
+ }).join('');
+}
+$('quickOpen').onclick=quickOpen;
+$('quickClose').onclick=()=>{if(quickBusy)return;if(Object.keys(quickDraft).some(dt=>fields.some(f=>quickChanged(dt,f.key)))&&!confirm('לצאת בלי לשמור את השינויים?'))return;quickDismiss()};
+function quickDismiss(){$('quickBackdrop').classList.remove('open');$('quickBackdrop').setAttribute('aria-hidden','true');quickDraft={};quickShare={};quickOriginal={};refresh()}
+$('quickDays').addEventListener('input',e=>{const el=e.target;if(!el.matches('[data-quick-field]'))return;const date=el.dataset.quickDate,field=el.dataset.quickField;if(!quickDraft[date])return;quickDraft[date][field]=el.value;el.closest('.quick-field')?.classList.toggle('modified',quickChanged(date,field))});
+$('quickDays').addEventListener('change',e=>{const el=e.target;if(el.matches('[data-quick-share]'))quickShare[el.dataset.quickShare]=el.checked});
+$('quickCopy').onclick=async()=>{
+ if(quickBusy)return;
+ if(!confirm('למלא את המשבצות הריקות מתוך השבוע הקודם? נתונים שכבר קיימים בשבוע הנוכחי לא יוחלפו. השמירה תתבצע רק אם תלחצו ״שמור שינויים״.'))return;
+ const a=add(anchor,-7),b=add(anchor,-1);
+ try{
+  quickBusy=true;$('quickCopy').disabled=true;quickSetMessage('טוען את השבוע הקודם…');
+  const {data,error}=await db.from('child_daily_plans').select('*').eq('child',child).gte('plan_date',dateOnly(a)).lte('plan_date',dateOnly(b));if(error)throw error;
+  let num=0;
+  thisWeek().forEach((d,i)=>{const old=dateOnly(add(a,i)),cur=dateOnly(d),prev=(data||[]).find(r=>r.plan_date===old)||{};fields.forEach(f=>{if(!(quickDraft[cur]?.[f.key]||'').trim()&&(prev[f.key]||'').trim()){quickDraft[cur][f.key]=prev[f.key];num++}})});
+  quickRender();quickSetMessage(num?`הועתקו ${num} משבצות ריקות. אפשר לערוך ולשמור.`:'לא היו משבצות ריקות להשלמה מהשבוע הקודם.');
+ }catch(e){quickSetMessage('ההעתקה נכשלה: '+e.message,true)}finally{quickBusy=false;$('quickCopy').disabled=false}
+};
+$('quickSave').onclick=async()=>{
+ if(quickBusy)return;
+ const changes=[];
+ thisWeek().forEach(d=>{const dt=dateOnly(d);fields.forEach(f=>{if(quickChanged(dt,f.key)){changes.push({date:dt,field:f.key,value:(quickDraft[dt][f.key]||'').trim(),share:!!quickShare[quickKey(dt,f.key)]})}})});
+ if(!changes.length){quickSetMessage('אין שינויים לשמירה.');return}
+ const shared=changes.filter(c=>c.share);
+ if(shared.length&&!confirm(`לשמור ${changes.length} שינויים? ${shared.length} מהם יועתקו גם לילד השני ועשויים להחליף ערכים קיימים אצלו.`))return;
+ quickBusy=true;$('quickSave').disabled=true;$('quickCopy').disabled=true;$('quickClose').disabled=true;
+ try{
+  quickSetMessage('שומר את השינויים…');
+  // Read fresh rows so unrelated fields aren't overwritten by stale drafts.
+  const from=dateOnly(anchor),to=dateOnly(add(anchor,6));
+  const {data,error}=await db.from('child_daily_plans').select('*').in('child',[child,otherChild()]).gte('plan_date',from).lte('plan_date',to);
+  if(error)throw error;
+  const existing=new Map((data||[]).map(r=>[r.child+'|'+r.plan_date,r]));
+  const affected=new Map();
+  function stage(kid,dt,f,value){const k=kid+'|'+dt;const row=affected.get(k)||{...(existing.get(k)||{}),child:kid,plan_date:dt};fields.forEach(x=>{if(row[x.key]==null)row[x.key]=''});row[f]=value;row.updated_at=new Date().toISOString();affected.set(k,row)}
+  changes.forEach(c=>{stage(child,c.date,c.field,c.value);if(c.share)stage(otherChild(),c.date,c.field,c.value)});
+  // Explicit upserts, one at a time; report partial errors honestly.
+  let completed=0;for(const record of affected.values()){
+    const {error:saveError}=await db.from('child_daily_plans').upsert({child:record.child,plan_date:record.plan_date,morning:record.morning||'',food:record.food||'',pickup:record.pickup||'',afternoon:record.afternoon||'',updated_at:record.updated_at},{onConflict:'child,plan_date'});
+    if(saveError)throw new Error(`נשמרו ${completed} מתוך ${affected.size} ימים לילדים. ${saveError.message}`);
+    completed++;
+  }
+  quickSetMessage('כל השינויים נשמרו.');quickDismiss();
+ }catch(e){quickSetMessage('השמירה לא הושלמה: '+e.message,true)}
+ finally{quickBusy=false;$('quickSave').disabled=false;$('quickCopy').disabled=false;$('quickClose').disabled=false}
+};
+
 db.auth.getSession().then(({data})=>{if(!data.session){$('message').textContent='יש להתחבר קודם ל-Sinai';return}refresh()});
 db.channel('daily-plan-'+child).on('postgres_changes',{event:'*',schema:'public',table:'child_daily_plans'},()=>refresh()).on('postgres_changes',{event:'*',schema:'public',table:'daily_rewards'},()=>refresh()).subscribe();setInterval(()=>{if(!document.hidden)refresh()},60000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh()});
 </script></body></html>
