@@ -646,7 +646,7 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
  }));
  opts.addEventListener('click',e=>{const item=e.target.closest('[data-choice]');if(!item||!chosen)return;
   const type=item.dataset.choice;heading.textContent=(type==='daily'?'הטבלה היומית של ':'מערכת השעות של ')+(chosen==='tamara'?'תמרה':'יהונתן');
-  frame.src=type==='daily'?'daily_routine.html?child='+chosen+'&theme='+encodeURIComponent(themePref):pages[chosen]+'?theme='+encodeURIComponent(themePref);
+  frame.src=type==='daily'?'daily_routine_v2.html?child='+chosen+'&theme='+encodeURIComponent(themePref):pages[chosen]+'?theme='+encodeURIComponent(themePref);
   frame.style.display='block';opts.hidden=true;
  });
  document.getElementById('scheduleClose').addEventListener('click',close);
