@@ -78,7 +78,11 @@ header{padding:16px 16px 10px;display:flex;flex-direction:column;gap:12px;align-
 main{padding:0 16px 100px}.grid{display:block}.day{min-height:0;border:0;border-bottom:1px solid var(--line);border-radius:0;background:transparent;box-shadow:none;display:block;padding:0}.day.today{border:0;border-bottom:1px solid var(--line);background:var(--today);padding-inline:7px;margin-inline:-7px;border-radius:7px}.day-toggle{width:100%;border:0;background:transparent;text-align:right;display:flex;align-items:flex-start;gap:10px;padding:10px 0;min-height:50px;border-radius:0}.day-title{width:72px;flex:none}.day-title b{display:block;font-size:14px}.day-title small{color:var(--mute);font-size:11px}.preview{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}.preview-row{display:flex;align-items:center;gap:6px;font-size:12.5px;min-width:0}.preview-row .name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}.preview-row .time{color:var(--mute);font-size:11px;direction:ltr}.preview-row .dot{width:6px;height:6px;border-radius:50%;flex:none}.toggle-arrow{color:var(--mute);font-size:12px;padding-top:4px}.empty{font-size:12px;color:var(--mute)}.more{font-size:11px;color:var(--mute)}
 .day-detail{padding:6px 8px 10px;background:var(--soft);border-radius:8px;margin-bottom:7px;display:flex;flex-direction:column;gap:5px}.day-detail .it{padding:7px 9px;border-radius:6px;background:var(--card);border-inline-start:3px solid var(--c);box-shadow:none;font-size:13px}.day-detail .it .t{font-size:11px}.day-detail .it.task{align-items:center}.day-detail .reward-controls{padding:7px 0;border-top:1px solid var(--line);gap:7px;display:grid;grid-template-columns:1fr 1fr}.day-detail .reward-controls button{font-size:13px;padding:6px}.day-detail .add{width:100%;margin:0;border:1px solid var(--line);color:var(--ink);background:var(--card)}
 .fab{position:fixed;bottom:calc(22px + env(safe-area-inset-bottom,0px));left:20px;z-index:5;width:62px;height:62px;border-radius:999px;background:var(--acc);color:white;border:0;font-size:37px;line-height:1;box-shadow:0 5px 18px #0003;display:flex;align-items:center;justify-content:center}.fab:focus-visible{outline:3px solid var(--ink)}
-.month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;direction:rtl}.month-weekday{text-align:center;color:var(--mute);font-size:11px;padding:6px 0}.month-day{border:0;background:var(--soft);border-radius:7px;min-height:49px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:5px}.month-day.outside{opacity:.35}.month-day.selected{outline:2px solid var(--acc)}.month-day.today{background:var(--today)}.month-day .count{width:5px;height:5px;border-radius:50%;background:var(--acc)}.month-detail{margin-top:12px;background:var(--soft);padding:12px;border-radius:9px}.month-detail .event{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.month-detail .event:last-child{border-bottom:0}.month-detail .time{font-size:11px;color:var(--mute)}.month-detail .actions{display:flex;gap:8px;margin-top:9px}.month-detail .actions button{flex:1;font-size:12px}.notes{display:none}.out{font-size:12px}.ov{z-index:20}.md{background:var(--card)}input,select{background:var(--card);color:var(--ink);border:1px solid var(--line)}.auth{background:var(--card)}#urgentTop{background:var(--urgent);border:1px solid var(--acc);color:var(--ink);box-shadow:none;font-weight:600}
+.month-grid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:4px;direction:rtl}.month-weekday{text-align:center;color:var(--mute);font-size:11px;padding:6px 0}.month-day{border:0;background:var(--soft);border-radius:7px;min-height:49px;padding:5px 2px;display:flex;flex-direction:column;align-items:center;gap:5px}.month-day.outside{opacity:.35}.month-day.selected{outline:2px solid var(--acc)}.month-day.today{background:var(--today)}/* Show one colored dot per unique attendee of each monthly event. */
+.month-day .count{width:5px;height:5px;border-radius:50%;background:var(--acc)}
+.month-day .month-member-dots{display:flex;gap:3px;flex-wrap:wrap;justify-content:center;align-items:center;max-width:100%;min-height:5px}
+.month-day .month-member-dots .dot{display:inline-block;flex:none;width:5px;height:5px;border-radius:50%}
+.month-detail{margin-top:12px;background:var(--soft);padding:12px;border-radius:9px}.month-detail .event{padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}.month-detail .event:last-child{border-bottom:0}.month-detail .time{font-size:11px;color:var(--mute)}.month-detail .actions{display:flex;gap:8px;margin-top:9px}.month-detail .actions button{flex:1;font-size:12px}.notes{display:none}.out{font-size:12px}.ov{z-index:20}.md{background:var(--card)}input,select{background:var(--card);color:var(--ink);border:1px solid var(--line)}.auth{background:var(--card)}#urgentTop{background:var(--urgent);border:1px solid var(--acc);color:var(--ink);box-shadow:none;font-weight:600}
 @media(max-width:430px){.brand-row{flex-wrap:wrap}.tools{width:100%;justify-content:space-between}.tools button{font-size:12px}.toolbar{gap:5px}.weeknav button{padding:6px 8px}}
 @media(min-width:750px){header,main,.legend,.urgent-banner{max-width:720px;margin-left:auto;margin-right:auto}.day-toggle{min-height:60px}.fab{left:max(20px,calc((100vw - 720px)/2))}}
 
@@ -399,6 +403,15 @@ const fail=e=>alert('משהו השתבש: '+(e.message||e));
 const mem=id=>S.members.find(m=>m.id===id)||{name:'ללא שיוך',color:'#999'};
 const linked=it=>it.ms&&it.ms.length?it.ms:(it.m?[it.m]:[]);
 const eventDots=it=>linked(it).length?linked(it).map(id=>`<i class="dot" style="background:${esc(mem(id).color)}"></i>`).join(''):'<i class="dot" style="background:#b4afa8"></i>';
+function monthDots(date){
+ const colors=new Set();
+ itemsOn(date).forEach(it=>{
+  const ids=linked(it);
+  if(!ids.length)colors.add('#b4afa8');
+  else ids.forEach(id=>colors.add(mem(id).color||'#b4afa8'));
+ });
+ return colors.size?`<span class="month-member-dots" aria-hidden="true">${[...colors].map(c=>`<i class="dot" style="background:${esc(c)}"></i>`).join('')}</span>`:'';
+}
 const show=x=>['login','denied','app'].forEach(k=>$('#'+k).classList.toggle('hid',k!==x));
 
 /* ---- loading data from the database ---- */
@@ -524,7 +537,7 @@ function render(){
   let html=['א','ב','ג','ד','ה','ו','ש'].map(d=>`<span class="month-weekday">${d}</span>`).join('');
   for(let i=0;i<42;i++){
    const dt=addD(s,i),ds=iso(dt),out=dt.getMonth()!==first.getMonth();
-   html+=`<button class="month-day${out?' outside':''}${ds===selectedMonthDay?' selected':''}${ds===today?' today':''}" data-select="${ds}" aria-label="${DAYS[dt.getDay()]} ${ds}"><span>${dt.getDate()}</span>${itemsOn(ds).length?'<i class="count"></i>':''}${SinaiHolidays.get(ds).length?'<i class="holiday-mark"></i>':''}</button>`;
+   html+=`<button class="month-day${out?' outside':''}${ds===selectedMonthDay?' selected':''}${ds===today?' today':''}" data-select="${ds}" aria-label="${DAYS[dt.getDay()]} ${ds}"><span>${dt.getDate()}</span>${monthDots(ds)}${SinaiHolidays.get(ds).length?'<i class="holiday-mark"></i>':''}</button>`;
   }
   $('#monthGrid').innerHTML=html;
   const d=parse(selectedMonthDay),events=itemsOn(selectedMonthDay);
