@@ -194,6 +194,13 @@ body.schedule-open{overflow:hidden}
 .sinai-icon-option.selected{outline:2px solid #bf8667;outline-offset:-2px}
 .sinai-icon-option .sinai-category-icon{width:34px;height:34px}
 .sinai-icon-hint{font-size:12px;color:var(--mute)}
+.sinai-icon-editor{margin-top:16px;border-top:1px solid var(--line);padding-top:11px}
+.sinai-icon-toggle{display:flex;align-items:center;gap:8px;width:100%;padding:9px 4px;border:0;background:transparent;color:var(--ink);text-align:right;font:inherit;font-size:13px;cursor:pointer}
+.sinai-icon-toggle .sinai-icon-hint{flex:1}
+.sinai-icon-editor:not(.expanded) .sinai-icon-grid,.sinai-icon-editor:not(.expanded) .sinai-icon-choice{display:none}
+.sinai-icon-editor.expanded .sinai-icon-grid{margin-top:9px}
+.sinai-icon-editor.expanded #sinaiIconReset{border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px}
+
 .preview-row .sinai-category-icon{width:20px;height:20px;border-radius:6px}
 .it .sinai-category-icon{width:25px;height:25px;margin-inline-end:5px}
 </style>
@@ -224,10 +231,11 @@ body.schedule-open{overflow:hidden}
   <h3 id="mt">הוספה</h3>
   <div class="seg"><button id="tyE" class="on">אירוע</button><button id="tyT">משימה</button></div>
   <label>כותרת</label><input id="fT">
-  <label>אייקון לאירוע</label><div class="sinai-icon-choice"><span id="sinaiIconPreview"></span><span id="sinaiIconLabel" class="sinai-icon-hint">נבחר אוטומטית לפי הכותרת</span><button type="button" id="sinaiIconReset" style="font-size:12px;padding:5px 9px">בחירה אוטומטית</button></div><div id="sinaiIconGrid" class="sinai-icon-grid" aria-label="בחירת אייקון"></div><label>תאריך</label><input id="fD" type="date">
+  <label>תאריך</label><input id="fD" type="date">
   <label id="lT">שעה (לא חובה)</label><input id="fH" type="time">
   <label>למי? (אפשר לבחור כמה, או להשאיר ללא שיוך)</label><div id="fMembers" class="family-choices"></div>
   <label id="lR"><input id="fR" type="checkbox" style="width:auto"> חוזר מדי שבוע</label>
+  <div id="sinaiIconEditor" class="sinai-icon-editor"><button type="button" id="sinaiIconToggle" class="sinai-icon-toggle" aria-expanded="false" aria-controls="sinaiIconOptions"><span id="sinaiIconCompactPreview"></span><span class="sinai-icon-hint">האייקון נבחר אוטומטית</span><strong>עריכת אייקון ▾</strong></button><div id="sinaiIconOptions"><div class="sinai-icon-choice"><span id="sinaiIconPreview"></span><span id="sinaiIconLabel" class="sinai-icon-hint">נבחר אוטומטית לפי הכותרת</span><button type="button" id="sinaiIconReset" style="font-size:12px;padding:5px 9px">בחירה אוטומטית</button></div><div id="sinaiIconGrid" class="sinai-icon-grid" aria-label="בחירת אייקון"></div></div></div>
   <div class="foot"><button class="p" id="sv">שמירה</button><button id="del">מחיקה</button><button id="cx">ביטול</button></div>
 </div></div>
 
@@ -408,7 +416,8 @@ const SinaiIcons=(()=>{
  ['waves','שחייה','#6799AC','#DDECF0','שחייה|שחיה|בריכה|ים|גלישה'],
  ['health','רופא ובריאות','#C77E82','#F4E1E2','רופא|שיניים|רופאת|מרפאה|בדיקה|חיסון|טיפול|אורתודנט'],
  ['cake','יום הולדת','#C38B48','#F7E8CD','יום הולדת|יומולדת|יום הולדתו|מסיבת יום|עוגה'],
- ['sports','ספורט','#A67EB3','#EEE3F2','כדורסל|כדורגל|אימון|ספורט|טניס|ג׳ודו|ג\u0027ודו|התעמלות'],
+ ['basketball','כדורסל','#C7835A','#F6E5D9','כדורסל|קליעות לסל|משחק סל'],
+ ['sports','ספורט','#A67EB3','#EEE3F2','כדורגל|אימון|ספורט|טניס|ג׳ודו|ג\u0027ודו|התעמלות'],
  ['books','לימודים','#6F9677','#E3EDE1','בית ספר|ספרייה|ספריה|שיעור|למידה|גן ילדים|אסיפת הורים'],
  ['music','מוזיקה','#B77EAD','#F3E5EF','מוזיקה|נגינה|פסנתר|גיטרה|קונצרט|תופים|מקהלה'],
  ['car','נסיעה','#6684A8','#E1E8F2','איסוף|להחזיר|לוקח|נסיעה|הסעה|רכב|תחנת רכבת|להביא'],
@@ -429,6 +438,7 @@ const SinaiIcons=(()=>{
  waves:'<path d="M2 8q3-4 6 0t6 0t6 0M2 14q3-4 6 0t6 0t6 0M2 20q3-4 6 0t6 0t6 0"/>',
  health:'<path d="M6 3v5a6 6 0 0 0 12 0V3M4 3h4m8 0h4M12 14v3a4 4 0 0 0 8 0v-3"/><circle cx="20" cy="12" r="2"/>',
  cake:'<path d="M4 11h16v10H4zM3 11q2-3 4 0t4 0t4 0t6 0M8 4v5m8-5v5M7 3h2m6 0h2"/>',
+ basketball:'<circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3v18M6 5c5 4 5 10 0 14M18 5c-5 4-5 10 0 14"/>',
  sports:'<circle cx="12" cy="12" r="9"/><path d="M12 3l3 6-3 4-5-1-1-5M12 13l5 2 2 5M7 12l-3 5M15 9l6-1"/>',
  books:'<path d="M12 6c-3-3-7-3-10-2v15c4-1 8-1 10 2 2-3 6-3 10-2V4c-3-1-7-1-10 2zm0 0v15"/>',
  music:'<path d="M9 18V5l12-2v13M9 9l12-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="18" cy="16" rx="3" ry="2"/>',
@@ -672,12 +682,14 @@ let manuallyChosenIcon=null;
 function updateIconForm(){
  const key=manuallyChosenIcon||SinaiIcons.choose($('#fT').value);
  $('#sinaiIconPreview').innerHTML=SinaiIcons.svg(key,$('#fT').value,26);
+ $('#sinaiIconCompactPreview').innerHTML=SinaiIcons.svg(key,$('#fT').value,22);
  $('#sinaiIconLabel').textContent=SinaiIcons.get(key).label+(manuallyChosenIcon?' · בחירה ידנית':' · בחירה אוטומטית');
  $('#sinaiIconGrid').innerHTML=SinaiIcons.entries.map(([id,label])=>`<button type="button" class="sinai-icon-option${id===key?' selected':''}" data-icon="${id}" aria-pressed="${id===key}">${SinaiIcons.svg(id,'',23)}<span>${label}</span></button>`).join('');
 }
 $('#fT').addEventListener('input',updateIconForm);
 $('#sinaiIconGrid').addEventListener('click',e=>{const b=e.target.closest('[data-icon]');if(!b)return;manuallyChosenIcon=b.dataset.icon;updateIconForm()});
 $('#sinaiIconReset').onclick=()=>{manuallyChosenIcon=null;updateIconForm()};
+$('#sinaiIconToggle').onclick=()=>{const expanded=$('#sinaiIconEditor').classList.toggle('expanded');$('#sinaiIconToggle').setAttribute('aria-expanded',String(expanded));};
 /* ---- add / edit window ---- */
 function setType(t){type=t;$('#tyE').classList.toggle('on',t==='event');$('#tyT').classList.toggle('on',t==='task');
   $('#fH').style.display=$('#lT').style.display=$('#lR').style.display=t==='event'?'':'none';}
@@ -689,7 +701,7 @@ function openM(id,ds){
   $('#fMembers').innerHTML=S.members.map(m=>`<label class="family-option"><input type="checkbox" value="${esc(m.id)}" ${selectedIds.includes(m.id)?'checked':''}><i class="dot" style="--c:${esc(m.color)}"></i><span>${esc(m.name)}</span></label>`).join('')||'<p class="sub">אין בני משפחה — האירוע יישאר ללא שיוך.</p>';
   setType(it?it.type:'event');
   $('#fT').value=it?it.title:'';$('#fD').value=it?it.date:ds;$('#fH').value=it&&it.time||'';
-  $('#fR').checked=!!(it&&it.rec);manuallyChosenIcon=it&&it.icon_key||null;updateIconForm();
+  $('#fR').checked=!!(it&&it.rec);manuallyChosenIcon=it&&it.icon_key||null;$('#sinaiIconEditor').classList.remove('expanded');$('#sinaiIconToggle').setAttribute('aria-expanded','false');updateIconForm();
   $('#del').style.display=it?'':'none';$('#ov').classList.add('on');$('#fT').focus();
 }
 const closeM=()=>{if(document.activeElement instanceof HTMLElement)document.activeElement.blur();$('#ov').classList.remove('on');window.scrollTo({left:0,top:window.scrollY,behavior:'instant'});};
