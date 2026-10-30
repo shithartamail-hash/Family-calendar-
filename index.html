@@ -184,6 +184,18 @@ main{padding-bottom:calc(126px + env(safe-area-inset-bottom,0px))}
 body.schedule-open{overflow:hidden}
 .child-options{display:flex;gap:10px;justify-content:center;align-items:center;padding:18px;flex-wrap:wrap;background:var(--bg)}
 .child-options[hidden]{display:none!important}.child-options button{background:var(--card);border:1px solid var(--line);border-radius:14px;color:var(--ink);padding:18px 15px;font:inherit;font-weight:600;min-width:125px}
+
+/* Sinai Studio event icon palette */
+.sinai-category-icon{display:inline-flex;align-items:center;justify-content:center;flex:none;width:29px;height:29px;border-radius:9px;background:var(--icon-bg);color:var(--icon-color);vertical-align:middle}
+.sinai-category-icon svg{display:block;max-width:75%;max-height:75%}
+.sinai-icon-choice{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:5px}
+.sinai-icon-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;max-height:180px;overflow:auto;padding:6px 1px}
+.sinai-icon-option{display:flex;gap:3px;align-items:center;flex-direction:column;padding:7px 3px;border:1px solid var(--line);border-radius:9px;background:var(--card);font-size:11px;color:var(--ink)}
+.sinai-icon-option.selected{outline:2px solid #bf8667;outline-offset:-2px}
+.sinai-icon-option .sinai-category-icon{width:34px;height:34px}
+.sinai-icon-hint{font-size:12px;color:var(--mute)}
+.preview-row .sinai-category-icon{width:20px;height:20px;border-radius:6px}
+.it .sinai-category-icon{width:25px;height:25px;margin-inline-end:5px}
 </style>
 </head>
 <body>
@@ -212,7 +224,7 @@ body.schedule-open{overflow:hidden}
   <h3 id="mt">הוספה</h3>
   <div class="seg"><button id="tyE" class="on">אירוע</button><button id="tyT">משימה</button></div>
   <label>כותרת</label><input id="fT">
-  <label>תאריך</label><input id="fD" type="date">
+  <label>אייקון לאירוע</label><div class="sinai-icon-choice"><span id="sinaiIconPreview"></span><span id="sinaiIconLabel" class="sinai-icon-hint">נבחר אוטומטית לפי הכותרת</span><button type="button" id="sinaiIconReset" style="font-size:12px;padding:5px 9px">בחירה אוטומטית</button></div><div id="sinaiIconGrid" class="sinai-icon-grid" aria-label="בחירת אייקון"></div><label>תאריך</label><input id="fD" type="date">
   <label id="lT">שעה (לא חובה)</label><input id="fH" type="time">
   <label>למי? (אפשר לבחור כמה, או להשאיר ללא שיוך)</label><div id="fMembers" class="family-choices"></div>
   <label id="lR"><input id="fR" type="checkbox" style="width:auto"> חוזר מדי שבוע</label>
@@ -390,6 +402,55 @@ window.addEventListener('focus',updateDailyTip);
 window.addEventListener('pageshow',updateDailyTip);
 setInterval(updateDailyTip,60000);
 
+/* Sinai Studio: category icons. No external icon service or AI calls. */
+const SinaiIcons=(()=>{
+ const entries=[
+ ['waves','שחייה','#6799AC','#DDECF0','שחייה|שחיה|בריכה|ים|גלישה'],
+ ['health','רופא ובריאות','#C77E82','#F4E1E2','רופא|שיניים|רופאת|מרפאה|בדיקה|חיסון|טיפול|אורתודנט'],
+ ['cake','יום הולדת','#C38B48','#F7E8CD','יום הולדת|יומולדת|יום הולדתו|מסיבת יום|עוגה'],
+ ['sports','ספורט','#A67EB3','#EEE3F2','כדורסל|כדורגל|אימון|ספורט|טניס|ג׳ודו|ג\u0027ודו|התעמלות'],
+ ['books','לימודים','#6F9677','#E3EDE1','בית ספר|ספרייה|ספריה|שיעור|למידה|גן ילדים|אסיפת הורים'],
+ ['music','מוזיקה','#B77EAD','#F3E5EF','מוזיקה|נגינה|פסנתר|גיטרה|קונצרט|תופים|מקהלה'],
+ ['car','נסיעה','#6684A8','#E1E8F2','איסוף|להחזיר|לוקח|נסיעה|הסעה|רכב|תחנת רכבת|להביא'],
+ ['food','אוכל','#C7835A','#F6E5D9','אוכל|ארוחה|מסעדה|צהריים|פיצה|פסטה|בישול|קניות לסופר|סופרמרקט'],
+ ['dance','ריקוד','#B77EAD','#F3E5EF','ריקוד|בלט|מחול|רוקדת'],
+ ['home','בית ומשפחה','#6F9677','#E3EDE1','בית|משפחה|משפחתי|סבתא|סבא|הורים'],
+ ['shopping','קניות','#C38B48','#F7E8CD','קניות|לקנות|חנות|מכולת|שוק'],
+ ['work','עבודה','#6684A8','#E1E8F2','עבודה|פגישה|ישיבה|משרד|זום|שיחה עם'],
+ ['outing','טיול','#6F9677','#E3EDE1','טיול|טבע|פיקניק|הליכה|פארק|יער'],
+ ['art','יצירה','#C7835A','#F6E5D9','ציור|אומנות|אמנות|יצירה|סדנה|צביעה'],
+ ['party','מסיבה','#C38B48','#F7E8CD','מסיבה|חגיגה|אירוע חגיגי|הופעה|פסטיבל'],
+ ['sleep','מנוחה','#A67EB3','#EEE3F2','לישון|שינה|מנוחה|לילה|נמנום'],
+ ['pet','בעלי חיים','#6F9677','#E3EDE1','כלב|חתול|וטרינר|חיית מחמד'],
+ ['calendar','כללי','#738C83','#E6ECE6','']
+ ];
+ const icons=Object.fromEntries(entries.map(e=>[e[0],{key:e[0],label:e[1],color:e[2],bg:e[3],terms:e[4].split('|').filter(Boolean)}]));
+ const shapes={
+ waves:'<path d="M2 8q3-4 6 0t6 0t6 0M2 14q3-4 6 0t6 0t6 0M2 20q3-4 6 0t6 0t6 0"/>',
+ health:'<path d="M6 3v5a6 6 0 0 0 12 0V3M4 3h4m8 0h4M12 14v3a4 4 0 0 0 8 0v-3"/><circle cx="20" cy="12" r="2"/>',
+ cake:'<path d="M4 11h16v10H4zM3 11q2-3 4 0t4 0t4 0t6 0M8 4v5m8-5v5M7 3h2m6 0h2"/>',
+ sports:'<circle cx="12" cy="12" r="9"/><path d="M12 3l3 6-3 4-5-1-1-5M12 13l5 2 2 5M7 12l-3 5M15 9l6-1"/>',
+ books:'<path d="M12 6c-3-3-7-3-10-2v15c4-1 8-1 10 2 2-3 6-3 10-2V4c-3-1-7-1-10 2zm0 0v15"/>',
+ music:'<path d="M9 18V5l12-2v13M9 9l12-2"/><ellipse cx="6" cy="18" rx="3" ry="2"/><ellipse cx="18" cy="16" rx="3" ry="2"/>',
+ car:'<path d="M5 16h14l-2-7H7l-2 7zM4 16v4m16-4v4M3 16h18M8 12h8"/><circle cx="7" cy="18" r="1"/><circle cx="17" cy="18" r="1"/>',
+ food:'<path d="M4 3v8m3-8v8m3-8v8M4 11h6m-3 0v10M18 3q-7 7 0 11v7M18 3v18"/>',
+ dance:'<circle cx="13" cy="4" r="2"/><path d="M12 7l-3 5 6 3m-3-8 5 4 5-1M9 12l-5 7m11-4 4 6"/>',
+ home:'<path d="m3 11 9-8 9 8M5 10v11h14V10M10 21v-8h4v8"/>',
+ shopping:'<path d="M3 8h18l-2 13H5L3 8zm4 0 5-6 5 6"/>',
+ work:'<rect x="3" y="7" width="18" height="14" rx="2"/><path d="M9 7V4h6v3m-12 8h18m-11 0h4"/>',
+ outing:'<path d="m3 20 7-16 5 10 2-4 5 10H3zM12 20v-5m-2 2h4"/>',
+ art:'<path d="M12 3C6 3 3 7 3 12s4 9 9 9c2 0 3-2 2-4s1-3 3-2 4-2 4-5c0-4-4-7-9-7z"/><circle cx="7" cy="11" r="1"/><circle cx="11" cy="7" r="1"/><circle cx="17" cy="9" r="1"/>',
+ party:'<path d="M5 20 10 4l10 11-15 5zM15 4l3-2m1 7 3-1M12 2v2M3 9l2 2"/>',
+ sleep:'<path d="M19 18A9 9 0 0 1 10 3 9 9 0 1 0 19 18z"/>',
+ pet:'<circle cx="8" cy="7" r="2"/><circle cx="16" cy="7" r="2"/><circle cx="4" cy="12" r="2"/><circle cx="20" cy="12" r="2"/><path d="M12 12c-3 0-6 4-6 6s2 3 6 1c4 2 6 1 6-1s-3-6-6-6z"/>',
+ calendar:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-13 4h3m3 0h3"/>'
+ };
+ function choose(title){const text=String(title||'').toLocaleLowerCase('he-IL');for(const entry of entries){if(entry[0]==='calendar')continue;if(entry[4].split('|').filter(Boolean).some(term=>text.includes(term)))return entry[0]}return 'calendar'}
+ function get(key,title){return icons[key]||icons[choose(title)]}
+ function svg(key,title,size=24){const x=get(key,title);return `<span class="sinai-category-icon" style="--icon-color:${x.color};--icon-bg:${x.bg}" title="${x.label}"><svg viewBox="0 0 24 24" width="${size}" height="${size}" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${shapes[x.key]}</svg></span>`}
+ return{entries,icons,choose,get,svg};
+})();
+
 const DAYS=['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
 const MON=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
 const iso=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
@@ -419,7 +480,7 @@ async function reload(t){
   const{data,error}=await db.from(t==='notes'?'week_notes':t==='rewards'?'daily_rewards':t==='urgent'?'urgent_messages':t).select('*').order('created_at');
   if(error)return fail(error);
   if(t==='members')S.members=data.map(r=>({id:r.id,name:r.name,color:r.color}));
-  else if(t==='items')S.items=data.map(r=>({id:r.id,type:r.type,title:r.title,date:r.item_date,time:(r.item_time||'').slice(0,5),m:r.member_id,ms:Array.isArray(r.member_ids)?r.member_ids:(r.member_id?[r.member_id]:[]),rec:r.recurring,done:r.done}));
+  else if(t==='items')S.items=data.map(r=>({id:r.id,type:r.type,title:r.title,date:r.item_date,time:(r.item_time||'').slice(0,5),m:r.member_id,ms:Array.isArray(r.member_ids)?r.member_ids:(r.member_id?[r.member_id]:[]),rec:r.recurring,done:r.done,icon_key:r.icon_key||null}));
   else if(t==='rewards')S.rewards=data.map(r=>({id:r.id,date:r.reward_date,child:r.child}));
   else if(t==='urgent'){S.urgent=data.map(r=>({id:r.id,content:r.content,done:r.is_done}));drawUrgent();}
   else S.notes=data.map(r=>({id:r.id,w:r.week_start,text:r.content}));
@@ -523,10 +584,10 @@ function render(){
   let h='';
   for(let i=0;i<7;i++){
    const dt=addD(wk,i),ds=iso(dt),events=itemsOn(ds),isOpen=openedDay===ds;
-   const brief=events.slice(0,isOpen?100:2).map(it=>`<div class="preview-row${it.type==='task'&&it.done?' completed-task':''}">${it.type==='task'?`<input type="checkbox" class="ck compact-ck" data-id="${it.id}" aria-label="סמן משימה: ${esc(it.title)}" ${it.done?'checked':''}>`:`<span class="event-dots">${eventDots(it)}</span>`}<span class="name">${esc(it.title)}</span>${it.time?`<span class="time">${esc(it.time)}</span>`:''}</div>`).join('') || '<span class="empty">אין אירועים</span>';
+   const brief=events.slice(0,isOpen?100:2).map(it=>`<div class="preview-row${it.type==='task'&&it.done?' completed-task':''}">${it.type==='task'?`<input type="checkbox" class="ck compact-ck" data-id="${it.id}" aria-label="סמן משימה: ${esc(it.title)}" ${it.done?'checked':''}>`:`<span class="event-dots">${eventDots(it)}</span>`}${SinaiIcons.svg(it.icon_key,it.title,17)}<span class="name">${esc(it.title)}</span>${it.time?`<span class="time">${esc(it.time)}</span>`:''}</div>`).join('') || '<span class="empty">אין אירועים</span>';
    h+=`<section class="day${ds===today?' today':''}"><div class="day-toggle" role="button" tabindex="0" data-open="${ds}" aria-expanded="${isOpen}"><span class="day-title"><b>${DAYS[i]}</b><small>${dt.getDate()}/${dt.getMonth()+1}</small>${SinaiHolidays.get(ds).map(n=>`<span class="holiday-label">${esc(n)}</span>`).join('')}</span><span class="preview">${brief}${!isOpen&&events.length>2?`<span class="more">ועוד ${events.length-2} אירועים</span>`:''}</span><span class="toggle-arrow">${isOpen?'⌃':'⌄'}</span></div>`;
    if(isOpen){
-    h+=`<div class="day-detail">`+events.map(it=>{const c=esc(mem(it.m).color);if(it.type==='task')return `<div class="it task${it.done?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${it.done?'checked':''} style="width:auto"><span class="x">${esc(it.title)}</span></div>`;return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${esc(it.time)}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">↻</span>':''}</div>`}).join('');
+    h+=`<div class="day-detail">`+events.map(it=>{const c=esc(mem(it.m).color);if(it.type==='task')return `<div class="it task${it.done?' done':''}" style="--c:${c}" data-id="${it.id}"><input type="checkbox" class="ck" data-id="${it.id}" ${it.done?'checked':''} style="width:auto">${SinaiIcons.svg(it.icon_key,it.title,20)}<span class="x">${esc(it.title)}</span></div>`;return `<div class="it" style="--c:${c}" data-id="${it.id}" data-d="${ds}">${it.time?`<span class="t">${esc(it.time)}</span>`:''}${esc(it.title)}${it.rec?' <span class="rec">↻</span>':''}</div>`}).join('');
     h+=`<button class="add" data-d="${ds}">+ הוסף ליום הזה</button></div>`;
    }
    h+='</section>';
@@ -606,6 +667,17 @@ $('#themeToggle').onclick=()=>{
 };
 applyTheme();
 
+/* ---- icon selector: auto by title, manual choice wins ---- */
+let manuallyChosenIcon=null;
+function updateIconForm(){
+ const key=manuallyChosenIcon||SinaiIcons.choose($('#fT').value);
+ $('#sinaiIconPreview').innerHTML=SinaiIcons.svg(key,$('#fT').value,26);
+ $('#sinaiIconLabel').textContent=SinaiIcons.get(key).label+(manuallyChosenIcon?' · בחירה ידנית':' · בחירה אוטומטית');
+ $('#sinaiIconGrid').innerHTML=SinaiIcons.entries.map(([id,label])=>`<button type="button" class="sinai-icon-option${id===key?' selected':''}" data-icon="${id}" aria-pressed="${id===key}">${SinaiIcons.svg(id,'',23)}<span>${label}</span></button>`).join('');
+}
+$('#fT').addEventListener('input',updateIconForm);
+$('#sinaiIconGrid').addEventListener('click',e=>{const b=e.target.closest('[data-icon]');if(!b)return;manuallyChosenIcon=b.dataset.icon;updateIconForm()});
+$('#sinaiIconReset').onclick=()=>{manuallyChosenIcon=null;updateIconForm()};
 /* ---- add / edit window ---- */
 function setType(t){type=t;$('#tyE').classList.toggle('on',t==='event');$('#tyT').classList.toggle('on',t==='task');
   $('#fH').style.display=$('#lT').style.display=$('#lR').style.display=t==='event'?'':'none';}
@@ -617,7 +689,7 @@ function openM(id,ds){
   $('#fMembers').innerHTML=S.members.map(m=>`<label class="family-option"><input type="checkbox" value="${esc(m.id)}" ${selectedIds.includes(m.id)?'checked':''}><i class="dot" style="--c:${esc(m.color)}"></i><span>${esc(m.name)}</span></label>`).join('')||'<p class="sub">אין בני משפחה — האירוע יישאר ללא שיוך.</p>';
   setType(it?it.type:'event');
   $('#fT').value=it?it.title:'';$('#fD').value=it?it.date:ds;$('#fH').value=it&&it.time||'';
-  $('#fR').checked=!!(it&&it.rec);
+  $('#fR').checked=!!(it&&it.rec);manuallyChosenIcon=it&&it.icon_key||null;updateIconForm();
   $('#del').style.display=it?'':'none';$('#ov').classList.add('on');$('#fT').focus();
 }
 const closeM=()=>{if(document.activeElement instanceof HTMLElement)document.activeElement.blur();$('#ov').classList.remove('on');window.scrollTo({left:0,top:window.scrollY,behavior:'instant'});};
@@ -626,7 +698,7 @@ $('#sv').onclick=async()=>{
   const title=$('#fT').value.trim();if(!title||!$('#fD').value){$('#fT').focus();return}
   const assigned=[...document.querySelectorAll('#fMembers input:checked')].map(el=>el.value);
   const isE=type==='event',row={type,title,item_date:$('#fD').value,member_id:assigned[0]||null,member_ids:assigned,
-    item_time:isE&&$('#fH').value?$('#fH').value:null,recurring:isE&&$('#fR').checked};
+    item_time:isE&&$('#fH').value?$('#fH').value:null,recurring:isE&&$('#fR').checked,icon_key:manuallyChosenIcon||SinaiIcons.choose(title)};
   const{error}=editId?await db.from('items').update(row).eq('id',editId):await db.from('items').insert(row);
   if(error)return fail(error);
   closeM();reload('items');
