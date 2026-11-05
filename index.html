@@ -248,6 +248,30 @@ body.schedule-open{overflow:hidden}
 .bud-entry{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}.bud-entry:last-child{border:0}.bud-entry small{display:block;color:var(--mute);font-size:11px}.bud-entry button{min-height:30px;padding:4px 8px;font-size:12px}.bud-entry strong{direction:ltr;white-space:nowrap}
 .bud-dialog{position:fixed;inset:0;z-index:90010;background:#0008;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top,0px)) 13px 30px}.bud-dialog.on{display:flex}.bud-dialog-inner{width:min(100%,440px);background:var(--card);border-radius:18px;padding:19px;box-shadow:0 10px 40px #0003}.bud-dialog-inner h3{margin:0 0 10px}.bud-dialog-inner label{display:block;color:var(--mute);font-size:13px;margin:12px 0 5px}.bud-dialog-inner input,.bud-dialog-inner select{font-size:16px}.bud-formbuttons{display:flex;gap:7px;margin-top:18px}.bud-formbuttons button:first-child{flex:1;background:#315844;color:#fff;border-color:#315844}.bud-error{color:#b34036;font-size:12px;min-height:1.3em;margin:7px 0}.bud-budgetrow{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:8px 0}.bud-budgetrow label{font-size:13px;margin:0;flex:1}.bud-budgetrow input{max-width:132px;direction:ltr;text-align:left}.bud-compact{font-size:12px;padding:5px 9px}.bud-inline{display:flex;gap:6px;align-items:center}.bud-empty{text-align:center;color:var(--mute);font-size:13px;padding:15px 0}
 :root[data-theme="dark"] .bud-hero{background:linear-gradient(145deg,#273f36,#33433c);color:#e2f0e5;border-color:#455849}:root[data-theme="dark"] .bud-hero .bud-sm{color:#b9cabf}:root[data-theme="dark"] .bud-hero.negative{background:linear-gradient(145deg,#583936,#4b302e);color:#ffd7d4}
+
+/* Long-press sorting for Sinai Budget categories. */
+.bud-cat-picker .bud-category-edit-card{display:flex;align-items:center;gap:10px;padding:10px 9px;border:1px solid var(--line);border-radius:11px;background:var(--card);min-height:56px;user-select:none;-webkit-user-select:none}
+.bud-cat-picker .bud-drag-handle{font-size:20px;color:var(--mute);cursor:grab;flex:none;width:21px;text-align:center}
+.bud-cat-picker .bud-cat-edit-btn{flex:none;width:auto;min-height:34px;padding:5px 11px;font-size:12px;background:var(--soft);border-radius:9px}
+.bud-cat-picker .bud-category-edit-card.bud-dragging{background:var(--today);border-color:#719582;box-shadow:0 4px 15px #0002;opacity:.88;transform:scale(1.015)}
+.bud-cat-picker.bud-saving-sort{opacity:.65;pointer-events:none}
+
+/* Expandable category expense history in the main budget view. */
+.bud-cat-group{border-bottom:1px solid var(--line)}
+.bud-cat-group:last-child{border-bottom:0}
+.bud-category.bud-cat-trigger{width:100%;display:grid;grid-template-columns:34px minmax(0,1fr) 17px;gap:10px;text-align:right;border:0;border-radius:9px;background:transparent;color:var(--ink);padding:13px 3px;min-height:65px;cursor:pointer}
+.bud-category.bud-cat-trigger:focus-visible{outline:2px solid var(--acc);outline-offset:-2px}
+.bud-cat-chevron{font-size:14px;color:var(--mute);transition:transform .18s;justify-self:center}
+.bud-cat-trigger[aria-expanded="true"] .bud-cat-chevron{transform:rotate(-90deg)}
+.bud-cat-history{background:var(--soft);padding:9px 12px 12px;border-radius:11px;margin:0 0 12px 0}
+.bud-cat-history[hidden]{display:none!important}
+.bud-cat-history-title{display:flex;justify-content:space-between;align-items:center;gap:8px;color:var(--mute);font-size:12px;font-weight:700;padding:3px 0 8px}
+.bud-cat-transaction{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.bud-cat-transaction strong{display:block;font-size:13px;overflow-wrap:anywhere;font-weight:650}
+.bud-cat-transaction small{font-size:11px;color:var(--mute);display:block;margin-top:3px}
+.bud-cat-transaction .bud-cat-money{font-weight:750;direction:ltr;white-space:nowrap;font-size:13px}
+.bud-cat-allhistory{width:100%;margin-top:8px;background:var(--card);font-size:12px;font-weight:650}
+.bud-cat-fixed-note{font-size:11px;color:var(--mute);padding-top:10px;border-top:1px solid var(--line);line-height:1.6}
 </style>
 </head>
 <body>
@@ -274,7 +298,7 @@ body.schedule-open{overflow:hidden}
 
 <section id="budgetView" role="region" aria-label="תקציב משפחתי" aria-hidden="true">
   <div class="bud-shell">
-    <div class="bud-top"><div><div class="bud-eyebrow">SINAI / BUDGET</div><h2 class="bud-title">התקציב שלנו</h2></div><button type="button" class="bud-close-main" id="budgetClose" aria-label="סגירת מסך התקציב" title="חזרה ליומן">×</button></div>
+    <div class="bud-top"><div><div class="bud-eyebrow">SINAI / BUDGET · פירוט הוצאות v2</div><h2 class="bud-title">התקציב שלנו</h2></div><button type="button" class="bud-close-main" id="budgetClose" aria-label="סגירת מסך התקציב" title="חזרה ליומן">×</button></div>
     <div class="bud-month"><button type="button" id="budgetNext" aria-label="חודש הבא">‹</button><strong id="budgetMonthTitle"></strong><button type="button" id="budgetPrev" aria-label="חודש קודם">›</button></div>
     <div id="budgetError" class="bud-error" role="alert"></div>
     <div id="budgetContent"><div class="bud-empty">טוענת את התקציב…</div></div>
@@ -817,9 +841,9 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
  const moneyField=n=>String(Number(n)||0);
  const fmtDate=d=>{if(!d)return '';const a=String(d).split('-');return a.length===3?a[2]+'/'+a[1]:d};
  const names=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
- let month=today(),data={categories:[],months:[],allocations:[],entries:[],fixed:[]},opened=false,request=0,channel=null,dialogAction=null;
+ let month=today(),data={categories:[],months:[],allocations:[],entries:[],fixed:[]},opened=false,request=0,channel=null,dialogAction=null,expandedCategory=null,showAllCategoryHistory=false;
  const ymd=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
- const monthShift=n=>{const [y,m]=month.split('-').map(Number);const d=new Date(y,m-1+n,1);month=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');load()};
+ const monthShift=n=>{expandedCategory=null;showAllCategoryHistory=false;const [y,m]=month.split('-').map(Number);const d=new Date(y,m-1+n,1);month=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');load()};
  function err(msg){$b('budgetError').textContent=msg||''}
  const cat=id=>data.categories.find(c=>c.id===id);
  const catOptions=selected=>data.categories.filter(c=>c.active!==false||c.id===selected).map(c=>`<option value="${escape(c.id)}" ${c.id===selected?'selected':''}>${escape(c.name)}</option>`).join('');
@@ -846,7 +870,18 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
   const rows=data.categories.filter(c=>c.active!==false||st.allocations.some(a=>a.category_id===c.id)||st.entry.some(a=>a.category_id===c.id)||st.fixed.some(a=>a.category_id===c.id)).map(c=>{
    const budget=amount(st.allocations.find(a=>a.category_id===c.id)?.amount),expenses=st.entry.filter(e=>e.category_id===c.id).reduce((s,e)=>s+amount(e.amount),0),fixed=st.fixed.filter(e=>e.category_id===c.id).reduce((s,e)=>s+amount(e.amount),0),spent=expenses+fixed;return{...c,budget,spent,remaining:budget-spent,over:budget>0?spent>budget:spent>0};
   }).sort((a,b)=>Number(b.over)-Number(a.over)||a.sort_order-b.sort_order);
-  const catHtml=rows.map(c=>`<div class="bud-category"><span class="bud-cat-icon">${escape(c.icon||'◦')}</span><div><div class="bud-cat-title"><span>${escape(c.name)}</span><span class="${c.over?'overspent':''}">${c.over?'חריגה ':c.budget?'נותרו ':'ללא הקצאה · נוצלו '}${money(c.budget?Math.abs(c.remaining):c.spent)}</span></div><div class="bud-cat-note">נוצלו ${money(c.spent)} מתוך ${money(c.budget)}</div><div class="bud-mini-track"><div class="bud-mini-fill ${c.over?'over':''}" style="width:${c.budget?Math.min(100,c.spent/c.budget*100):c.spent?100:0}%"></div></div></div></div>`).join('');
+  const catHtml=rows.map(c=>{
+   const selected=expandedCategory===c.id;
+   const transactions=data.entries.filter(e=>e.category_id===c.id&&(showAllCategoryHistory||String(e.entry_date).slice(0,7)===month))
+    .sort((a,b)=>String(b.entry_date).localeCompare(String(a.entry_date))||String(b.created_at||'').localeCompare(String(a.created_at||'')));
+   const currentMonthCount=st.entry.filter(e=>e.category_id===c.id).length;
+   const activeFixed=st.fixed.filter(f=>f.category_id===c.id);
+   const dateLabel=d=>{const x=String(d||'').split('-');return x.length===3?x[2]+'/'+x[1]+'/'+x[0]:escape(d)};
+   const transactionHtml=transactions.map(e=>`<div class="bud-cat-transaction"><div><strong>${escape(e.description)}</strong><small>${dateLabel(e.entry_date)}</small></div><span class="bud-cat-money">${money(e.amount)}</span></div>`).join('');
+   const fixedInfo=activeFixed.length?`<div class="bud-cat-fixed-note">התחייבויות קבועות החודש: ${activeFixed.map(f=>`${escape(f.description)} (${money(f.amount)})`).join(' · ')}. מוצגות בנפרד מההוצאות שנרשמו, כדי לא לספור אותן פעמיים.</div>`:'';
+   return `<div class="bud-cat-group"><button type="button" class="bud-category bud-cat-trigger" data-budget-category="${escape(c.id)}" aria-expanded="${selected}" aria-controls="bud-cat-history-${escape(c.id)}"><span class="bud-cat-icon">${escape(c.icon||'◦')}</span><div><div class="bud-cat-title"><span>${escape(c.name)}</span><span class="${c.over?'overspent':''}">${c.over?'חריגה ':c.budget?'נותרו ':'ללא הקצאה · נוצלו '}${money(c.budget?Math.abs(c.remaining):c.spent)}</span></div><div class="bud-cat-note">נוצלו ${money(c.spent)} מתוך ${money(c.budget)} · לחצו לפירוט הוצאות</div><div class="bud-mini-track"><div class="bud-mini-fill ${c.over?'over':''}" style="width:${c.budget?Math.min(100,c.spent/c.budget*100):c.spent?100:0}%"></div></div></div><span class="bud-cat-chevron" aria-hidden="true">⌄</span></button>
+   <div class="bud-cat-history" id="bud-cat-history-${escape(c.id)}" ${selected?'':'hidden'}><div class="bud-cat-history-title"><span>${showAllCategoryHistory?'כל ההוצאות בקטגוריה':'הוצאות בחודש הנבחר'}</span><span>${showAllCategoryHistory?transactions.length:currentMonthCount} הוצאות</span></div>${transactionHtml||'<div class="bud-empty">אין הוצאות רשומות בתקופה הזו</div>'}${fixedInfo}<button class="bud-cat-allhistory" type="button" data-budget-history-mode="${escape(c.id)}">${showAllCategoryHistory?'הצגת החודש הנבחר בלבד':'הצגת כל ההיסטוריה'}</button></div></div>`;
+  }).join('');
   const recent=[...st.entry].sort((a,b)=>String(b.entry_date).localeCompare(String(a.entry_date))||String(b.created_at).localeCompare(String(a.created_at))).slice(0,12);
   const entryHtml=recent.map(e=>`<div class="bud-entry"><div><strong>${escape(e.description)}</strong><small>${escape(cat(e.category_id)?.name||'ללא קטגוריה')} · ${fmtDate(e.entry_date)}</small></div><div class="bud-inline"><strong>${money(e.amount)}</strong><button type="button" data-budget-edit="${escape(e.id)}" aria-label="עריכת הוצאה">עריכה</button></div></div>`).join('');
   $b('budgetContent').innerHTML=`<section class="bud-hero ${st.remaining<0?'negative':''}"><div>נשאר לנו החודש</div><strong class="bud-big">${money(st.remaining)}</strong><div class="bud-sm">מתוך תקציב של ${money(st.budget)}</div><div class="bud-track"><div class="bud-fill" style="width:${pct}%"></div></div><div class="bud-sm">הוצאות: ${money(st.entrySum)} · התחייבויות קבועות: ${money(st.fixedSum)}</div></section>
@@ -855,6 +890,8 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
   <section class="bud-section"><div class="bud-sectionhead"><h3>הוצאות החודש</h3><span class="bud-muted">${st.entry.length} הוצאות</span></div><div class="bud-card">${entryHtml||'<div class="bud-empty">עדיין לא נרשמו הוצאות בחודש הזה</div>'}</div></section>
   <section class="bud-section"><div class="bud-sectionhead"><h3>הוצאות קבועות</h3><button type="button" class="bud-compact" id="budgetNewFixed">+ הוצאה קבועה</button></div><div class="bud-card">${st.fixed.map(f=>`<div class="bud-entry"><div><strong>${escape(f.description)}</strong><small>${escape(cat(f.category_id)?.name||'ללא קטגוריה')} · יורד מהיתרה בכל חודש</small></div><div class="bud-inline"><strong>${money(f.amount)}</strong><button type="button" data-budget-fixed="${escape(f.id)}">עריכה</button></div></div>`).join('')||'<div class="bud-empty">אין הוצאות קבועות</div>'}</div></section>`;
   $b('budgetNewExpense').onclick=()=>editExpense();$b('budgetPlan').onclick=plan;$b('budgetNewFixed').onclick=()=>editFixed();
+  // Category taps are handled by one delegated listener attached below.
+
   $b('budgetContent').querySelectorAll('[data-budget-edit]').forEach(b=>b.onclick=()=>editExpense(data.entries.find(e=>e.id===b.dataset.budgetEdit)));
   $b('budgetContent').querySelectorAll('[data-budget-fixed]').forEach(b=>b.onclick=()=>editFixed(data.fixed.find(f=>f.id===b.dataset.budgetFixed)));
  }
@@ -862,11 +899,18 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
  function field(id){return $b(id)}
  function editExpense(row){if(!data.categories.length){err('יש להגדיר קטגוריות לפני הוספת הוצאה');return}
   const d=row?.entry_date||(month===today()?ymd():month+'-01'),selected=row?.category_id||data.categories.find(c=>c.active!==false)?.id;
-  showDialog(row?'עריכת הוצאה':'הוספת הוצאה',`<label for="budExpenseAmount">סכום בשקלים</label><input id="budExpenseAmount" type="number" inputmode="decimal" step="0.01" min="0.01" value="${row?escape(moneyField(row.amount)):''}" placeholder="0"><label for="budExpenseDesc">על מה ההוצאה?</label><input id="budExpenseDesc" maxlength="160" value="${escape(row?.description||'')}" placeholder="למשל: סופר"><label for="budExpenseCat">קטגוריה</label><select id="budExpenseCat">${catOptions(selected)}</select><label for="budExpenseDate">תאריך</label><input id="budExpenseDate" type="date" value="${escape(d)}">${row?'<button type="button" class="bud-compact" id="budExpenseDelete" style="margin-top:14px;color:#b34036">מחיקת ההוצאה</button>':''}`,async()=>{
+  showDialog(row?'עריכת הוצאה':'הוספת הוצאה',`<label for="budExpenseAmount">סכום בשקלים</label><input id="budExpenseAmount" type="number" autocomplete="off" inputmode="decimal" step="0.01" min="0.01" value="${row?escape(moneyField(row.amount)):''}" placeholder="0"><label for="budExpenseDesc">על מה ההוצאה?</label><input id="budExpenseDesc" autocomplete="off" maxlength="160" value="${escape(row?.description||'')}" placeholder="למשל: סופר"><label for="budExpenseCat">קטגוריה</label><select id="budExpenseCat">${catOptions(selected)}</select><label for="budExpenseDate">תאריך</label><input id="budExpenseDate" type="date" value="${escape(d)}">${row?'<button type="button" class="bud-compact" id="budExpenseDelete" style="margin-top:14px;color:#b34036">מחיקת ההוצאה</button>':''}`,async()=>{
    const amountValue=mustNumber(field('budExpenseAmount').value),description=field('budExpenseDesc').value.trim(),category_id=field('budExpenseCat').value,entry_date=field('budExpenseDate').value;
    if(!description||!entry_date||!category_id)throw Error('מלאו תיאור, קטגוריה ותאריך');const payload={amount:amountValue,description,category_id,entry_date};
    const r=row?await db.from('budget_entries').update(payload).eq('id',row.id):await db.from('budget_entries').insert(payload);if(r.error)throw r.error;
+   // Never carry values into the next new-expense form (including iOS form restoration).
+   if(!row){field('budExpenseAmount').value='';field('budExpenseDesc').value='';field('budExpenseCat').selectedIndex=0;delete field('budExpenseCat').dataset.manual;}
   });
+  if(!row){
+   // Clear freshly constructed form fields even when Safari restores previous values.
+   field('budExpenseAmount').value='';field('budExpenseDesc').value='';
+   field('budExpenseCat').value=selected||'';field('budExpenseDate').value=d;
+  }
   if(row)field('budExpenseDelete').onclick=async()=>{if(!confirm('למחוק את ההוצאה?'))return;const r=await db.from('budget_entries').delete().eq('id',row.id);if(r.error){field('budgetDialogError').textContent=r.error.message;return}closeDialog();load()};
   else{let t=field('budExpenseDesc');t.addEventListener('input',()=>{if(field('budExpenseCat').dataset.manual)return;const v=t.value;const rules=[[/סופר|מכולת|ירקות|חלב|לחם|שופרסל|רמי לוי|אוכל לבית/i,'מזון וקניות'],[/דלק|חניה|מוסך|רכב|אוטובוס/i,'רכב ותחבורה'],[/חוג|גן|בית ספר|צהרון|ילד/i,'ילדים וחינוך'],[/מסעדה|קפה|פיצה|סרט|בילוי|חופשה/i,'בילויים ואוכל בחוץ'],[/רופא|תרופה|קופת חולים|טיפול/i,'בריאות'],[/בגד|נעל|מתנה|קנייה/i,'קניות אישיות'],[/חשמל|מים|ארנונה|שכירות|משכנתא/i,'בית וחשבונות']];let match=rules.find(([re])=>re.test(v));if(match){const cat=data.categories.find(c=>c.name===match[1]);if(cat)field('budExpenseCat').value=cat.id}});field('budExpenseCat').onchange=()=>field('budExpenseCat').dataset.manual='1'}
  }
@@ -909,13 +953,45 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
   field('budAddCategory').onclick=()=>categoryForm(null);
  }
  function categoryList(){
-  const active=data.categories.filter(c=>c.active!==false);
-  const options=active.map(c=>`<button type="button" class="bud-category-edit-card" data-edit-cat="${escape(c.id)}" aria-label="עריכת ${escape(c.name)}"><span class="bud-category-edit-icon">${escape(c.icon||'◦')}</span><span class="bud-category-edit-name">${escape(c.name)}</span><span class="bud-category-edit-arrow">עריכה ‹</span></button>`).join('');
-  showDialog('ניהול קטגוריות',`<p class="bud-cat-form-note">בחרו קטגוריה לעריכת השם או האייקון שלה.</p><div class="bud-cat-picker">${options||'<div class="bud-empty">אין קטגוריות פעילות</div>'}</div><button type="button" class="bud-add-category" id="budAddFromList">+ הוספת קטגוריה</button><button type="button" class="bud-subtle-back" id="budBackToPlan">חזרה לתכנון התקציב</button>`,null);
+  const active=data.categories.filter(c=>c.active!==false).sort((a,b)=>a.sort_order-b.sort_order);
+  const options=active.map(c=>`<div class="bud-category-edit-card" data-sort-cat="${escape(c.id)}"><span class="bud-drag-handle" aria-hidden="true">☰</span><span class="bud-category-edit-icon">${escape(c.icon||'◦')}</span><span class="bud-category-edit-name">${escape(c.name)}</span><button type="button" class="bud-cat-edit-btn" data-edit-cat="${escape(c.id)}" aria-label="עריכת ${escape(c.name)}">עריכה</button></div>`).join('');
+  showDialog('ניהול קטגוריות',`<p class="bud-cat-form-note">לחיצה על ״עריכה״ משנה שם ואייקון. לחיצה ארוכה על שורת קטגוריה מאפשרת לגרור אותה למעלה או למטה ולשנות את הסדר.</p><div class="bud-cat-picker" id="budSortableCategories">${options||'<div class="bud-empty">אין קטגוריות פעילות</div>'}</div><div class="bud-error" id="budSortError" role="status"></div><button type="button" class="bud-add-category" id="budAddFromList">+ הוספת קטגוריה</button><button type="button" class="bud-subtle-back" id="budBackToPlan">חזרה לתכנון התקציב</button>`,null);
   $b('budgetDialogSave').style.display='none';
   field('budAddFromList').onclick=()=>categoryForm(null);
   field('budBackToPlan').onclick=()=>{restoreDialogSave();plan()};
   field('budgetDialogBody').querySelectorAll('[data-edit-cat]').forEach(b=>b.onclick=()=>categoryForm(data.categories.find(c=>c.id===b.dataset.editCat)));
+  setupCategoryReorder();
+ }
+ function setupCategoryReorder(){
+  const list=field('budSortableCategories');if(!list)return;
+  let timer=null,drag=null,startY=0,saving=false,ignoreClick=false;
+  const cards=()=>Array.from(list.querySelectorAll('[data-sort-cat]'));
+  const reset=()=>{clearTimeout(timer);timer=null;if(drag){drag.classList.remove('bud-dragging');drag=null}cards().forEach(c=>c.classList.remove('bud-drag-target'))};
+  function start(card){if(saving||!card.isConnected)return;drag=card;drag.classList.add('bud-dragging');if(navigator.vibrate)navigator.vibrate(20)}
+  function move(y){if(!drag)return;const target=cards().find(c=>c!==drag&&(()=>{const r=c.getBoundingClientRect();return y>=r.top&&y<=r.bottom})());if(!target)return;const r=target.getBoundingClientRect();list.insertBefore(drag,y<r.top+r.height/2?target:target.nextSibling)}
+  async function finish(){const hadDrag=!!drag;const order=cards().map(c=>c.dataset.sortCat);reset();if(!hadDrag||saving)return;
+   const current=data.categories.filter(c=>c.active!==false).sort((a,b)=>a.sort_order-b.sort_order).map(c=>c.id);
+   if(order.join('|')===current.join('|'))return;
+   saving=true;list.classList.add('bud-saving-sort');field('budSortError').textContent='שומרת את הסדר החדש…';
+   // Updating existing rows preserves all category names and linked expenses.
+   try{const results=await Promise.all(order.map((id,i)=>db.from('budget_categories').update({sort_order:(i+1)*10}).eq('id',id)));
+    const failure=results.find(r=>r.error);if(failure)throw failure.error;
+    order.forEach((id,i)=>{const c=data.categories.find(x=>x.id===id);if(c)c.sort_order=(i+1)*10});
+    data.categories.sort((a,b)=>a.sort_order-b.sort_order);
+    field('budSortError').textContent='הסדר נשמר';
+   }catch(e){field('budSortError').textContent='השמירה נכשלה: '+(e.message||'נסו שוב');}
+   finally{saving=false;list.classList.remove('bud-saving-sort')}
+  }
+  cards().forEach(card=>{
+   card.addEventListener('touchstart',e=>{if(e.target.closest('button')||saving||e.touches.length!==1)return;startY=e.touches[0].clientY;clearTimeout(timer);timer=setTimeout(()=>start(card),380)},{passive:true});
+   card.addEventListener('touchmove',e=>{if(!drag){if(Math.abs(e.touches[0].clientY-startY)>8)clearTimeout(timer);return}e.preventDefault();move(e.touches[0].clientY)},{passive:false});
+   card.addEventListener('touchend',()=>{clearTimeout(timer);if(drag)finish()});
+   card.addEventListener('touchcancel',()=>{clearTimeout(timer);if(drag)finish()});
+   card.addEventListener('mousedown',e=>{if(e.button!==0||e.target.closest('button')||saving)return;startY=e.clientY;clearTimeout(timer);timer=setTimeout(()=>start(card),380)});
+  });
+  const mouseMove=e=>{if(drag){e.preventDefault();move(e.clientY)}else if(timer&&Math.abs(e.clientY-startY)>8)clearTimeout(timer)};
+  const mouseUp=()=>{clearTimeout(timer);if(drag)finish();document.removeEventListener('mousemove',mouseMove);document.removeEventListener('mouseup',mouseUp)};
+  list.addEventListener('mousedown',e=>{if(e.button!==0||e.target.closest('button'))return;document.addEventListener('mousemove',mouseMove);document.addEventListener('mouseup',mouseUp)});
  }
  function restoreDialogSave(){$b('budgetDialogSave').style.display=''}
  function categoryForm(row){
@@ -938,8 +1014,14 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
   };
  }
 
- function open(){opened=true;month=today();$b('budgetView').classList.add('on');$b('budgetView').setAttribute('aria-hidden','false');document.body.classList.add('budget-open');load();if(!channel){channel=db.channel('sinai-budget');['budget_categories','budget_months','budget_allocations','budget_entries','budget_fixed'].forEach(t=>channel.on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(opened&&!$b('budgetDialog').classList.contains('on'))load()}));channel.subscribe()}}
+ function open(){opened=true;expandedCategory=null;showAllCategoryHistory=false;month=today();$b('budgetView').classList.add('on');$b('budgetView').setAttribute('aria-hidden','false');document.body.classList.add('budget-open');load();if(!channel){channel=db.channel('sinai-budget');['budget_categories','budget_months','budget_allocations','budget_entries','budget_fixed'].forEach(t=>channel.on('postgres_changes',{event:'*',schema:'public',table:t},()=>{if(opened&&!$b('budgetDialog').classList.contains('on'))load()}));channel.subscribe()}}
  function close(){opened=false;request++;closeDialog();$b('budgetView').classList.remove('on');$b('budgetView').setAttribute('aria-hidden','true');document.body.classList.remove('budget-open');if(channel){db.removeChannel(channel);channel=null}}
+ $b('budgetContent').addEventListener('click',event=>{
+  const mode=event.target.closest('[data-budget-history-mode]');
+  if(mode){expandedCategory=mode.dataset.budgetHistoryMode;showAllCategoryHistory=!showAllCategoryHistory;render();return}
+  const button=event.target.closest('[data-budget-category]');
+  if(button){const id=button.dataset.budgetCategory;expandedCategory=expandedCategory===id?null:id;showAllCategoryHistory=false;render()}
+ });
  $b('budgetOpen').onclick=open;$b('budgetClose').onclick=close;$b('budgetPrev').onclick=()=>monthShift(-1);$b('budgetNext').onclick=()=>monthShift(1);
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&opened){if($b('budgetDialog').classList.contains('on'))closeDialog();else close()}});
  db.auth.onAuthStateChange(event=>{if(event==='SIGNED_OUT')close()});
