@@ -249,6 +249,18 @@ body.schedule-open{overflow:hidden}
 .bud-dialog{position:fixed;inset:0;z-index:90010;background:#0008;display:none;align-items:flex-start;justify-content:center;overflow-y:auto;padding:calc(20px + env(safe-area-inset-top,0px)) 13px 30px}.bud-dialog.on{display:flex}.bud-dialog-inner{width:min(100%,440px);background:var(--card);border-radius:18px;padding:19px;box-shadow:0 10px 40px #0003}.bud-dialog-inner h3{margin:0 0 10px}.bud-dialog-inner label{display:block;color:var(--mute);font-size:13px;margin:12px 0 5px}.bud-dialog-inner input,.bud-dialog-inner select{font-size:16px}.bud-formbuttons{display:flex;gap:7px;margin-top:18px}.bud-formbuttons button:first-child{flex:1;background:#315844;color:#fff;border-color:#315844}.bud-error{color:#b34036;font-size:12px;min-height:1.3em;margin:7px 0}.bud-budgetrow{display:flex;align-items:center;justify-content:space-between;gap:10px;border-bottom:1px solid var(--line);padding:8px 0}.bud-budgetrow label{font-size:13px;margin:0;flex:1}.bud-budgetrow input{max-width:132px;direction:ltr;text-align:left}.bud-compact{font-size:12px;padding:5px 9px}.bud-inline{display:flex;gap:6px;align-items:center}.bud-empty{text-align:center;color:var(--mute);font-size:13px;padding:15px 0}
 :root[data-theme="dark"] .bud-hero{background:linear-gradient(145deg,#273f36,#33433c);color:#e2f0e5;border-color:#455849}:root[data-theme="dark"] .bud-hero .bud-sm{color:#b9cabf}:root[data-theme="dark"] .bud-hero.negative{background:linear-gradient(145deg,#583936,#4b302e);color:#ffd7d4}
 
+/* Gentle visual hierarchy for recurring commitments and finite installments. */
+.bud-fixed-card{background:color-mix(in srgb,var(--card) 85%,#d7e9e2);border-color:#a9cbbb}
+.bud-fixed-row{background:color-mix(in srgb,var(--card) 78%,#e0eae3);padding:11px 10px;border-radius:10px;margin:5px 0;border:1px solid #c8dacf}
+.bud-installment-row{background:color-mix(in srgb,var(--card) 78%,#eee2c7);border-color:#dccba8}
+.bud-kind-label{font-size:10px;font-weight:700;display:inline-block;margin:3px 0;padding:2px 8px;border-radius:50px;background:#d7e9df;color:#335b48}
+.bud-installment-row .bud-kind-label{background:#eee0bc;color:#735b2d}
+.bud-cat-fixed-note .bud-fixed-note-item{display:block;padding:3px 7px;margin:3px 0;border-radius:7px;background:color-mix(in srgb,var(--soft) 85%,#d7e9e2)}
+.bud-cat-fixed-note .bud-fixed-note-item.installment{background:color-mix(in srgb,var(--soft) 75%,#f2dfb7)}
+.bud-kind-help{font-size:12px;color:var(--mute);margin-top:7px}
+:root[data-theme="dark"] .bud-fixed-card{border-color:#4b7463}
+:root[data-theme="dark"] .bud-fixed-row{border-color:#4b7463}
+:root[data-theme="dark"] .bud-installment-row{border-color:#8b734b}
 /* Long-press sorting for Sinai Budget categories. */
 .bud-cat-picker .bud-category-edit-card{display:flex;align-items:center;gap:10px;padding:10px 9px;border:1px solid var(--line);border-radius:11px;background:var(--card);min-height:56px;user-select:none;-webkit-user-select:none}
 .bud-cat-picker .bud-drag-handle{font-size:20px;color:var(--mute);cursor:grab;flex:none;width:21px;text-align:center}
@@ -303,7 +315,7 @@ body.schedule-open{overflow:hidden}
 <section id="budgetView" role="region" aria-label="תקציב משפחתי" aria-hidden="true">
   <div class="bud-shell">
     <div class="bud-top"><div><div class="bud-eyebrow">SINAI / BUDGET</div><h2 class="bud-title">התקציב שלנו</h2></div><button type="button" class="bud-close-main" id="budgetClose" aria-label="סגירת מסך התקציב" title="חזרה ליומן">×</button></div>
-    <div class="bud-month"><button type="button" id="budgetNext" aria-label="חודש הבא">‹</button><strong id="budgetMonthTitle"></strong><button type="button" id="budgetPrev" aria-label="חודש קודם">›</button></div>
+    <div class="bud-month"><button type="button" id="budgetPrev" aria-label="חודש קודם">›</button><strong id="budgetMonthTitle"></strong><button type="button" id="budgetNext" aria-label="חודש הבא">‹</button></div>
     <div id="budgetError" class="bud-error" role="alert"></div>
     <div id="budgetContent"><div class="bud-empty">טוענת את התקציב…</div></div>
   </div>
@@ -844,6 +856,8 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
  const money=n=>new Intl.NumberFormat('he-IL',{style:'currency',currency:'ILS',maximumFractionDigits:0}).format(n);
  const moneyField=n=>String(Number(n)||0);
  const fmtDate=d=>{if(!d)return '';const a=String(d).split('-');return a.length===3?a[2]+'/'+a[1]:d};
+ const indexMonth=m=>{const [y,n]=String(m||'').split('-').map(Number);return y*12+n};
+ const installmentLabel=(row,shownMonth=month)=>{if(row.kind!=='installment')return '';const origin=row.installment_origin_month||row.start_month;const n=indexMonth(shownMonth)-indexMonth(origin)+1;return 'תשלום '+n+' מתוך '+row.installment_count};
  const names=['ינואר','פברואר','מרץ','אפריל','מאי','יוני','יולי','אוגוסט','ספטמבר','אוקטובר','נובמבר','דצמבר'];
  let month=today(),data={categories:[],months:[],allocations:[],entries:[],fixed:[]},opened=false,request=0,channel=null,dialogAction=null,expandedCategory=null,showAllCategoryHistory=false;
  const ymd=()=>{let d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
@@ -862,7 +876,7 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
    const [categories,months,allocations,entries,fixed]=await Promise.all(['budget_categories','budget_months','budget_allocations','budget_entries','budget_fixed'].map(query));
    if(token!==request||!opened)return;
    data={categories:categories.sort((a,b)=>a.sort_order-b.sort_order),months,allocations,entries,fixed};render();
-  }catch(e){if(token!==request)return;err('לא ניתן לטעון תקציב. אם זה השימוש הראשון, יש להריץ את קובץ ה-SQL ב-Supabase. ('+(e.message||'שגיאת חיבור')+')');$b('budgetContent').innerHTML='';}
+  }catch(e){if(token!==request)return;err('לא ניתן לטעון תקציב. יש לוודא שקובץ ה-SQL של התקציב ושל התשלומים הורצו ב-Supabase. ('+(e.message||'שגיאת חיבור')+')');$b('budgetContent').innerHTML='';}
  }
  function state(){const allocations=data.allocations.filter(a=>a.month===month);const entry=data.entries.filter(a=>String(a.entry_date).slice(0,7)===month);
   const fixed=data.fixed.filter(f=>f.active&&String(f.start_month)<=month&&(!f.end_month||String(f.end_month)>=month));
@@ -882,7 +896,7 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
    const activeFixed=st.fixed.filter(f=>f.category_id===c.id);
    const dateLabel=d=>{const x=String(d||'').split('-');return x.length===3?x[2]+'/'+x[1]+'/'+x[0]:escape(d)};
    const transactionHtml=transactions.map(e=>`<div class="bud-cat-transaction"><div><strong>${escape(e.description)}</strong><small>${dateLabel(e.entry_date)}</small></div><span class="bud-cat-money">${money(e.amount)}</span></div>`).join('');
-   const fixedInfo=activeFixed.length?`<div class="bud-cat-fixed-note">התחייבויות קבועות החודש: ${activeFixed.map(f=>`${escape(f.description)} (${money(f.amount)})`).join(' · ')}. מוצגות בנפרד מההוצאות שנרשמו, כדי לא לספור אותן פעמיים.</div>`:'';
+   const fixedInfo=activeFixed.length?`<div class="bud-cat-fixed-note">התחייבויות ותשלומים החודש: ${activeFixed.map(f=>`<span class="bud-fixed-note-item ${f.kind==='installment'?'installment':''}">${escape(f.description)} · ${money(f.amount)}${f.kind==='installment'?' · '+escape(installmentLabel(f)):''}</span>`).join('')}<span>מוצגים בנפרד מההוצאות שנרשמו, כדי לא לספור אותם פעמיים.</span></div>`:'';
    return `<div class="bud-cat-group"><button type="button" class="bud-category bud-cat-trigger" data-budget-category="${escape(c.id)}" aria-expanded="${selected}" aria-controls="bud-cat-history-${escape(c.id)}"><span class="bud-cat-icon">${escape(c.icon||'◦')}</span><div><div class="bud-cat-title"><span>${escape(c.name)}</span><span class="${c.over?'overspent':''}">${c.over?'חריגה ':c.budget?'נותרו ':'ללא הקצאה · נוצלו '}${money(c.budget?Math.abs(c.remaining):c.spent)}</span></div><div class="bud-cat-note">נוצלו ${money(c.spent)} מתוך ${money(c.budget)} · לחצו לפירוט הוצאות</div><div class="bud-mini-track"><div class="bud-mini-fill ${c.over?'over':''}" style="width:${c.budget?Math.min(100,c.spent/c.budget*100):c.spent?100:0}%"></div></div></div><span class="bud-cat-chevron" aria-hidden="true">⌄</span></button>
    <div class="bud-cat-history" id="bud-cat-history-${escape(c.id)}" ${selected?'':'hidden'}><div class="bud-cat-history-title"><span>${showAllCategoryHistory?'כל ההוצאות בקטגוריה':'הוצאות בחודש הנבחר'}</span><span>${showAllCategoryHistory?transactions.length:currentMonthCount} הוצאות</span></div>${transactionHtml||'<div class="bud-empty">אין הוצאות רשומות בתקופה הזו</div>'}${fixedInfo}<button class="bud-cat-allhistory" type="button" data-budget-history-mode="${escape(c.id)}">${showAllCategoryHistory?'הצגת החודש הנבחר בלבד':'הצגת כל ההיסטוריה'}</button></div></div>`;
   }).join('');
@@ -892,7 +906,7 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
   <div class="bud-actions"><button class="primary" type="button" id="budgetNewExpense">+ הוספת הוצאה</button><button type="button" id="budgetPlan">תכנון התקציב</button></div>
   <section class="bud-section"><div class="bud-sectionhead"><h3>מצב הקטגוריות</h3><span class="bud-muted">חריגות מופיעות ראשונות</span></div><div class="bud-card">${catHtml||'<div class="bud-empty">עדיין אין קטגוריות</div>'}</div></section>
   <section class="bud-section"><div class="bud-sectionhead"><h3>הוצאות החודש</h3><span class="bud-muted">${st.entry.length} הוצאות</span></div><div class="bud-card">${entryHtml||'<div class="bud-empty">עדיין לא נרשמו הוצאות בחודש הזה</div>'}</div></section>
-  <section class="bud-section"><div class="bud-sectionhead"><h3>הוצאות קבועות</h3><button type="button" class="bud-compact" id="budgetNewFixed">+ הוצאה קבועה</button></div><div class="bud-card">${st.fixed.map(f=>`<div class="bud-entry"><div><strong>${escape(f.description)}</strong><small>${escape(cat(f.category_id)?.name||'ללא קטגוריה')} · יורד מהיתרה בכל חודש</small></div><div class="bud-inline"><strong>${money(f.amount)}</strong><button type="button" data-budget-fixed="${escape(f.id)}">עריכה</button></div></div>`).join('')||'<div class="bud-empty">אין הוצאות קבועות</div>'}</div></section>`;
+  <section class="bud-section"><div class="bud-sectionhead"><h3>הוצאות קבועות ותשלומים</h3><button type="button" class="bud-compact" id="budgetNewFixed">+ הוצאה קבועה / תשלומים</button></div><div class="bud-card bud-fixed-card">${st.fixed.map(f=>`<div class="bud-entry bud-fixed-row ${f.kind==='installment'?'bud-installment-row':''}"><div><span class="bud-kind-label">${f.kind==='installment'?'תשלומים':'הוצאה קבועה'}</span><div><b>${escape(f.description)}</b></div><small>${escape(cat(f.category_id)?.name||'ללא קטגוריה')} · ${f.kind==='installment'?escape(installmentLabel(f)):'מתעדכן בכל חודש'}</small></div><div class="bud-inline"><strong>${money(f.amount)}</strong><button type="button" data-budget-fixed="${escape(f.id)}">עריכה</button></div></div>`).join('')||'<div class="bud-empty">אין הוצאות קבועות או תשלומים בחודש הזה</div>'}</div></section>`;
   $b('budgetNewExpense').onclick=()=>editExpense();$b('budgetPlan').onclick=plan;$b('budgetNewFixed').onclick=()=>editFixed();
   // Category taps are handled by one delegated listener attached below.
 
@@ -938,7 +952,7 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
   try{
    let r=await db.from('budget_fixed').insert(current).select('id').single();if(r.error)throw r.error;inserted.push(r.data.id);
    if(scope==='once'&&(!oldEnd||nextMonth(start)<=oldEnd)){
-    const resumed={description:row.description,category_id:row.category_id,amount:row.amount,start_month:nextMonth(start),end_month:oldEnd,active:true};
+    const resumed={description:row.description,category_id:row.category_id,amount:row.amount,kind:row.kind||'recurring',installment_count:row.installment_count||null,installment_origin_month:row.installment_origin_month||null,start_month:nextMonth(start),end_month:oldEnd,active:true};
     r=await db.from('budget_fixed').insert(resumed).select('id').single();if(r.error)throw r.error;inserted.push(r.data.id);
    }
    if(start===row.start_month){
@@ -952,14 +966,45 @@ $('#mX').onclick=()=>$('#ovM').classList.remove('on');
   }
  }
  function editFixed(row){
-  const scopeHtml=row?`<label for="budFixedScope">על אילו חודשים יחול השינוי?</label><select id="budFixedScope"><option value="ongoing">מהחודש הנבחר והלאה</option><option value="once">בחודש הנבחר בלבד</option></select><p class="bud-cat-form-note">הסכום החודשי נשמר אוטומטית גם בחודשים הבאים. שינוי לא ישפיע על חודשים קודמים.</p>`:'<p class="bud-cat-form-note">ההוצאה תופיע אוטומטית בכל חודש, עד שתשנו או תפסיקו אותה.</p>';
-  showDialog(row?'עריכת הוצאה קבועה':'הוצאה קבועה חדשה',`<label for="budFixedDesc">שם ההתחייבות</label><input id="budFixedDesc" maxlength="160" placeholder="למשל: חשמל" value="${escape(row?.description||'')}"><label for="budFixedAmount">סכום חודשי</label><input id="budFixedAmount" type="number" inputmode="decimal" min="0.01" step="0.01" value="${row?escape(moneyField(row.amount)):''}"><label for="budFixedCat">קטגוריה</label><select id="budFixedCat">${catOptions(row?.category_id)}</select>${row?'':`<label for="budFixedStart">החל מחודש</label><input id="budFixedStart" type="month" value="${escape(month)}">`}${scopeHtml}${row?'<button type="button" class="bud-compact" id="budFixedStop" style="margin-top:14px;color:#b34036">הפסקת ההתחייבות</button>':''}`,async()=>{
+  const isInstallment=row?.kind==='installment';
+  const scopeHtml=row?`<label for="budFixedScope">על אילו חודשים יחול השינוי?</label><select id="budFixedScope"><option value="ongoing">מהחודש הנבחר והלאה</option><option value="once">בחודש הנבחר בלבד</option></select><p class="bud-cat-form-note">שינוי הסכום לא ישפיע על חודשים קודמים. ${isInstallment?'מספר התשלומים ומועד הסיום נשמרים כפי שנקבעו בעת היצירה.':'הוצאה קבועה ממשיכה עד שמפסיקים אותה.'}</p>`:'<p class="bud-cat-form-note">הוצאה קבועה מתחדשת בכל חודש. תשלומים מסתיימים אוטומטית אחרי מספר החודשים שבוחרים.</p>';
+  const kindHtml=row?`<p class="bud-cat-form-note">סוג: <strong>${isInstallment?'תשלומים':'הוצאה קבועה'}</strong>${isInstallment?' · '+escape(installmentLabel(row)):''}</p>`:`<label for="budFixedKind">סוג הוצאה</label><select id="budFixedKind"><option value="recurring">הוצאה קבועה (ללא תאריך סיום)</option><option value="installment">תשלומים (מספר חודשים מוגדר)</option></select>`;
+  const durationHtml=row?'':`<div id="budInstallmentOptions" hidden><label for="budFixedCount">מספר תשלומים (חודשים)</label><input id="budFixedCount" type="number" inputmode="numeric" min="1" max="240" step="1" placeholder="למשל: 6"><p class="bud-kind-help" id="budInstallmentPreview"></p></div>`;
+  showDialog(row?'עריכת הוצאה קבועה / תשלומים':'הוצאה קבועה או תשלומים',`${kindHtml}<label for="budFixedDesc">שם ההוצאה</label><input id="budFixedDesc" maxlength="160" autocomplete="off" placeholder="למשל: מקרר / חשמל" value="${escape(row?.description||'')}"><label for="budFixedAmount">סכום בכל חודש (₪)</label><input id="budFixedAmount" type="number" inputmode="decimal" autocomplete="off" min="0.01" step="0.01" value="${row?escape(moneyField(row.amount)):''}"><label for="budFixedCat">קטגוריה</label><select id="budFixedCat">${catOptions(row?.category_id)}</select>${row?'':`<label for="budFixedStart">החל מחודש</label><input id="budFixedStart" type="month" value="${escape(month)}">`}${durationHtml}${scopeHtml}${row?'<div class="bud-inline" style="margin-top:14px;flex-wrap:wrap"><button type="button" class="bud-compact" id="budFixedStop">הפסקת ההתחייבות</button><button type="button" class="bud-compact" id="budFixedDelete" style="color:#b34036">מחיקת ההוצאה הקבועה</button></div>':''}`,async()=>{
    const description=field('budFixedDesc').value.trim(),am=mustNumber(field('budFixedAmount').value),category_id=field('budFixedCat').value;
    if(!description||!category_id)throw Error('יש למלא את כל השדות');
    const payload={description,amount:am,category_id};
-   if(row)await saveFixedRevision(row,payload,field('budFixedScope').value);
-   else{const start_month=field('budFixedStart').value;if(!start_month)throw Error('יש לבחור חודש התחלה');await fixedWrite('insert',{...payload,start_month,end_month:null,active:true})}
+   if(row){Object.assign(payload,{kind:row.kind||'recurring',installment_count:row.installment_count||null,installment_origin_month:row.installment_origin_month||null});await saveFixedRevision(row,payload,field('budFixedScope').value)}
+   else{
+    const start_month=field('budFixedStart').value,kind=field('budFixedKind').value;
+    if(!/^\d{4}-(0[1-9]|1[0-2])$/.test(start_month))throw Error('יש לבחור חודש התחלה');
+    let end_month=null,installment_count=null,installment_origin_month=null;
+    if(kind==='installment'){
+     const value=Number(field('budFixedCount').value);
+     if(!Number.isInteger(value)||value<1||value>240)throw Error('יש להזין מספר תשלומים שלם בין 1 ל־240');
+     installment_count=value;installment_origin_month=start_month;
+     const [y,m]=start_month.split('-').map(Number),d=new Date(y,m-1+value-1,1);
+     end_month=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+    }
+    await fixedWrite('insert',{...payload,start_month,end_month,active:true,kind,installment_count,installment_origin_month});
+   }
   });
+  if(!row){
+   field('budFixedDesc').value='';field('budFixedAmount').value='';field('budFixedCat').selectedIndex=0;field('budFixedStart').value=month;field('budFixedCount').value='';
+   const refresh=()=>{
+    const installment=field('budFixedKind').value==='installment';field('budInstallmentOptions').hidden=!installment;
+    const count=Number(field('budFixedCount').value);
+    field('budInstallmentPreview').textContent=installment&&Number.isInteger(count)&&count>0?'חיוב של '+money((Number(field('budFixedAmount').value)||0)*count)+' בסך הכול, על פני '+count+' חודשים.':'';
+   };
+   ['budFixedKind','budFixedCount','budFixedAmount'].forEach(id=>field(id).addEventListener('input',refresh));
+   field('budFixedKind').addEventListener('change',refresh);refresh();
+  }
+  if(row)field('budFixedDelete').onclick=async()=>{
+   if(!confirm('למחוק את ההוצאה לצמיתות? היא תוסר גם מהחודשים שבהם הופיעה. פעולה זו אינה ניתנת לביטול.'))return;
+   const button=field('budFixedDelete');button.disabled=true;
+   try{await fixedWrite('delete',{},row.id);closeDialog();await load()}
+   catch(e){field('budgetDialogError').textContent=e.message||'לא ניתן למחוק';button.disabled=false}
+  };
   if(row)field('budFixedStop').onclick=async()=>{
    if(!confirm('להפסיק את ההתחייבות מהחודש הנבחר והלאה?'))return;
    try{
