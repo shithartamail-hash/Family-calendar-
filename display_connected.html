@@ -547,8 +547,8 @@ body{background:#8e7862!important;color:#2c3a32!important}
 #sinaiNight .night-tree{position:absolute;bottom:11%;right:10%;height:27%;width:5px;background:#10242c;z-index:7;transform-origin:bottom}
 #sinaiNight .night-tree:before{content:'';position:absolute;bottom:15%;right:-15px;width:35px;height:100%;border-radius:65% 65% 40% 40%;background:#142e32}
 #sinaiNight .night-time{position:absolute;z-index:8;top:var(--clock-top,67%);right:var(--clock-right,12%);display:flex;align-items:center;flex-direction:column;gap:5px;text-align:center;transition:top 4s ease,right 4s ease;color:#dce5ef;text-shadow:0 2px 12px #050b1b;direction:ltr}
-#sinaiNight .night-clock{font-family:'Rubik',sans-serif;font-weight:300;font-size:clamp(22px,2.6vw,42px);font-variant-numeric:tabular-nums;letter-spacing:.04em}
-#sinaiNight .night-date{font-family:'Rubik',sans-serif;font-weight:400;font-size:clamp(11px,1vw,15px);direction:rtl;opacity:.82}
+#sinaiNight .night-clock{font-family:'Rubik',sans-serif;font-weight:350;font-size:clamp(36px,5.2vw,76px);line-height:1.08;font-variant-numeric:tabular-nums;letter-spacing:.025em}
+#sinaiNight .night-date{font-family:'Rubik',sans-serif;font-weight:450;font-size:clamp(17px,2.05vw,30px);line-height:1.3;direction:rtl;opacity:.92;white-space:nowrap}
 #sinaiNight .night-weather-note{position:absolute;z-index:8;bottom:4%;left:4%;font:400 clamp(11px,1.05vw,14px) 'Rubik',sans-serif;color:#d4dae5aa;direction:rtl}
 @media(prefers-reduced-motion:reduce){#sinaiNight .night-star,#sinaiNight .night-cloud,#sinaiNight .night-drop{animation:none!important}}
 
@@ -1125,10 +1125,10 @@ enter();
  let peekUntil=0,weatherAt=0,weather=null,lastMoonDay='',lastShift=-1,shown=false,manualMode=false;
  const manualButton=el('manualSaverButton');
  const nightVisible=()=>night.classList.contains('visible');
- function wake(){ if(!(isNight(when())||manualMode))return;peekUntil=Date.now()+60000;night.classList.remove('visible');shown=false; }
+ function wake(){ if(!(isNight(when())||manualMode))return;peekUntil=Date.now()+60000;night.classList.remove('visible');shown=false;manualButton.textContent='שומר מסך';manualButton.setAttribute('aria-pressed','false'); }
  night.addEventListener('pointerdown',wake);
  night.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();wake()}});
- manualButton.addEventListener('click',()=>{manualMode=!manualMode;peekUntil=0;manualButton.setAttribute('aria-pressed',String(manualMode));manualButton.textContent=manualMode?'בטל שומר מסך':'שומר מסך';tick()});
+ manualButton.addEventListener('click',()=>{manualMode=true;peekUntil=0;manualButton.setAttribute('aria-pressed','false');manualButton.textContent='שומר מסך';tick()});
  // While temporarily viewing the calendar, activity resets the one-minute idle timer.
  document.addEventListener('pointerdown',e=>{if(!nightVisible()&&(isNight(when())||manualMode)&&Date.now()<peekUntil)peekUntil=Date.now()+60000},true);
  document.addEventListener('keydown',()=>{if(!nightVisible()&&(isNight(when())||manualMode)&&Date.now()<peekUntil)peekUntil=Date.now()+60000},true);
