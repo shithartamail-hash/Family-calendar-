@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- Sinai wall display: refreshed download build 2026-11-14; screensaver fix included -->
 <html lang="he" dir="rtl">
 <head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>הלוח המשפחתי – תצוגת E-Ink</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Gveret+Levin&family=Playpen+Sans+Hebrew:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -1125,7 +1126,7 @@ enter();
  let peekUntil=0,weatherAt=0,weather=null,lastMoonDay='',lastShift=-1,shown=false,manualMode=false;
  const manualButton=el('manualSaverButton');
  const nightVisible=()=>night.classList.contains('visible');
- function wake(){ if(!(isNight(when())||manualMode))return;peekUntil=Date.now()+60000;night.classList.remove('visible');shown=false;manualButton.textContent='שומר מסך';manualButton.setAttribute('aria-pressed','false'); }
+ function wake(){ const scheduledNight=isNight(when());if(!(scheduledNight||manualMode))return;manualMode=false;peekUntil=scheduledNight?Date.now()+60000:0;night.classList.remove('visible');shown=false;manualButton.textContent='שומר מסך';manualButton.setAttribute('aria-pressed','false'); }
  night.addEventListener('pointerdown',wake);
  night.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();wake()}});
  manualButton.addEventListener('click',()=>{manualMode=true;peekUntil=0;manualButton.setAttribute('aria-pressed','false');manualButton.textContent='שומר מסך';tick()});
