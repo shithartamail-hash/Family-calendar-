@@ -685,6 +685,9 @@ body{background:#8e7862!important;color:#2c3a32!important}
 .wall-sticky-checkitem.checked .wall-sticky-checkmark{background:#70866b;color:#fff;border-color:#70866b}
 .wall-sticky-checkitem.checked .wall-sticky-check-label{text-decoration:line-through;opacity:.58}
 
+/* Tablet touch dragging: prevent inner list/text selection from stealing a gesture. */
+#wallStickyLayer .wall-sticky,#wallStickyLayer .wall-sticky * {touch-action:none!important;-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}
+#wallStickyLayer .wall-sticky.is-dragging {cursor:grabbing!important;filter:drop-shadow(0 11px 13px #44362648);transition:none!important;will-change:left,top}
 /* Same genuine Hebrew handwriting used for the calendar event titles. */
 #wallStickyLayer .wall-sticky,#wallStickyLayer .wall-sticky *{font-family:'Playpen Sans Hebrew','Gveret Levin','Rubik',sans-serif!important}
 #wallStickyLayer .wall-sticky-text,#wallStickyLayer .wall-sticky-checkitem{font-size:clamp(17px,1.65vw,24px)!important;line-height:1.42}
@@ -1326,24 +1329,24 @@ enter();
 window.SinaiStickyWall=(()=>{
  const layer=document.getElementById('wallStickyLayer');const screen=document.getElementById('screen');
  const html=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
- let notes=[],channel=null,drag=null;
+ let notes=[],channel=null,drag=null,frame=0;
  function renderNote(content){const rows=String(content||'').split('\n');const re=/^- \[([ xX])\] (.*)$/;if(!rows.slice(1).some(x=>re.test(x)))return `<div class="wall-sticky-text" dir="auto">${html(content)}</div>`;
   return `<div class="wall-sticky-check-title">${html(rows[0]||'רשימה')}</div><div class="wall-sticky-checklist">${rows.slice(1).map(line=>{const m=line.match(re);if(!m)return '';const done=m[1].toLowerCase()==='x';return `<div class="wall-sticky-checkitem ${done?'checked':''}"><span class="wall-sticky-checkmark">${done?'✓':''}</span><span class="wall-sticky-check-label">${html(m[2])}</span></div>`}).join('')}</div>`;
  }
 
  function clamp(n,a,b){return Math.min(Math.max(n,a),b)}
- function place(el,x,y){const maxX=Math.max(0,screen.clientWidth-el.offsetWidth-10),maxY=Math.max(0,screen.clientHeight-el.offsetHeight-54);el.style.left=`${clamp(x,8,maxX)}px`;el.style.top=`${clamp(y,80,maxY)}px`}
+ function place(el,x,y){const maxX=Math.max(8,layer.clientWidth-el.offsetWidth-8),maxY=Math.max(80,layer.clientHeight-el.offsetHeight-54);el.style.left=`${clamp(x,8,maxX)}px`;el.style.top=`${clamp(y,80,maxY)}px`}
  function render(){layer.innerHTML='';if(!active)return;
   const placed=[];
   notes.forEach((n,i)=>{const el=document.createElement('article');el.className='wall-sticky';el.dataset.id=n.id;el.dataset.color=['yellow','pink','green','blue'].includes(n.color)?n.color:'yellow';el.innerHTML=renderNote(n.content);layer.append(el);
-   const w=screen.clientWidth,h=screen.clientHeight,gap=14;
+   const w=layer.clientWidth,h=layer.clientHeight,gap=14;
    const hasSaved=n.pos_x!=null&&n.pos_y!=null;
    const initialX=hasSaved?Number(n.pos_x)/100*w:15;
    const initialY=hasSaved?Number(n.pos_y)/100*h:h-el.offsetHeight-91;
    const overlap=(x,y)=>placed.some(p=>x<p.x+p.w+gap&&x+el.offsetWidth+gap>p.x&&y<p.y+p.h+gap&&y+el.offsetHeight+gap>p.y);
    // Honor dragged locations where possible; auto-tile new notes across the bottom first, then upwards.
    let positioned=false;
-   if(!overlap(initialX,initialY)){place(el,initialX,initialY);positioned=true}
+   if(hasSaved || !overlap(initialX,initialY)){place(el,initialX,initialY);positioned=true}
    if(!positioned){
     const stepX=el.offsetWidth+gap,stepY=el.offsetHeight+gap;
     const maxCols=Math.max(1,Math.floor((w-26)/stepX));
@@ -1362,11 +1365,46 @@ window.SinaiStickyWall=(()=>{
  }
 
  async function load(){if(!active)return;const {data,error}=await db.from('family_sticky_notes').select('id,content,color,pos_x,pos_y,created_at').order('created_at');if(error){console.error('Wall notes',error);return}notes=data||[];if(!drag)render();if(!channel){channel=db.channel('sinai-wall-sticky');channel.on('postgres_changes',{event:'*',schema:'public',table:'family_sticky_notes'},load).subscribe()}}
- function reset(){notes=[];layer.innerHTML='';drag=null;if(channel){db.removeChannel(channel);channel=null}}
- layer.addEventListener('pointerdown',e=>{const el=e.target.closest('.wall-sticky');if(!el)return;const r=el.getBoundingClientRect();drag={el,id:el.dataset.id,pid:e.pointerId,offsetX:e.clientX-r.left,offsetY:e.clientY-r.top};el.setPointerCapture(e.pointerId);el.style.zIndex=100;});
- layer.addEventListener('pointermove',e=>{if(!drag||drag.pid!==e.pointerId)return;const r=screen.getBoundingClientRect();place(drag.el,e.clientX-r.left-drag.offsetX,e.clientY-r.top-drag.offsetY)});
- async function finish(e){if(!drag||drag.pid!==e.pointerId)return;const saved=drag;drag=null;saved.el.style.zIndex='';const pos_x=+(parseFloat(saved.el.style.left)/screen.clientWidth*100).toFixed(2),pos_y=+(parseFloat(saved.el.style.top)/screen.clientHeight*100).toFixed(2);const {error}=await db.from('family_sticky_notes').update({pos_x,pos_y}).eq('id',saved.id);if(error)console.error('Note position not saved',error)}
- layer.addEventListener('pointerup',finish);layer.addEventListener('pointercancel',finish);
+ function reset(){notes=[];if(frame)cancelAnimationFrame(frame);frame=0;drag=null;layer.innerHTML='';if(channel){db.removeChannel(channel);channel=null}}
+ // Capture the pointer at the layer level so that moving quickly beyond the note
+ // does not lose the touch stream. Work in untransformed CSS coordinates.
+ layer.addEventListener('pointerdown',e=>{
+  const el=e.target.closest('.wall-sticky');if(!el||drag)return;
+  if(e.pointerType==='mouse'&&e.button!==0)return;
+  e.preventDefault();
+  drag={el,id:el.dataset.id,pid:e.pointerId,
+   startX:e.clientX,startY:e.clientY,
+   left:parseFloat(el.style.left)||0,top:parseFloat(el.style.top)||0,
+   nextX:e.clientX,nextY:e.clientY,moved:false};
+  el.classList.add('is-dragging');el.style.zIndex='150';
+  try{layer.setPointerCapture(e.pointerId)}catch(_){ }
+ });
+ function moveNote(){frame=0;if(!drag)return;
+  place(drag.el,drag.left+drag.nextX-drag.startX,drag.top+drag.nextY-drag.startY);
+ }
+ layer.addEventListener('pointermove',e=>{
+  if(!drag||drag.pid!==e.pointerId)return;
+  e.preventDefault();drag.nextX=e.clientX;drag.nextY=e.clientY;
+  if(Math.abs(e.clientX-drag.startX)>3||Math.abs(e.clientY-drag.startY)>3)drag.moved=true;
+  if(!frame)frame=requestAnimationFrame(moveNote);
+ },{passive:false});
+ async function finish(e){
+  if(!drag||drag.pid!==e.pointerId)return;
+  e.preventDefault();
+  if(frame){cancelAnimationFrame(frame);frame=0}
+  const saved=drag;drag=null;
+  if(e.type==='pointerup')place(saved.el,saved.left+e.clientX-saved.startX,saved.top+e.clientY-saved.startY);
+  else if(e.type==='pointercancel')place(saved.el,saved.left+saved.nextX-saved.startX,saved.top+saved.nextY-saved.startY);
+  saved.el.classList.remove('is-dragging');saved.el.style.zIndex='';
+  try{if(layer.hasPointerCapture(saved.pid))layer.releasePointerCapture(saved.pid)}catch(_){ }
+  if(!saved.moved)return;
+  const pos_x=+(parseFloat(saved.el.style.left)/layer.clientWidth*100).toFixed(2);
+  const pos_y=+(parseFloat(saved.el.style.top)/layer.clientHeight*100).toFixed(2);
+  const {error}=await db.from('family_sticky_notes').update({pos_x,pos_y}).eq('id',saved.id);
+  if(error)console.error('Note position not saved',error);
+ }
+ layer.addEventListener('pointerup',finish);
+ layer.addEventListener('pointercancel',finish);
  window.addEventListener('resize',()=>{if(active&&!drag)render()});
  return{load,reset};
 })();
