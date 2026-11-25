@@ -365,10 +365,38 @@ body.schedule-open{overflow:hidden}
 <body>
 <section id="login" class="auth hid">
   <h1>היומן המשפחתי <span>שלנו</span></h1><p class="sub">התחברו כדי להמשיך</p>
-  <form id="lf"><input id="em" type="email" placeholder="אימייל" autocomplete="username" required>
+  <form id="lf" onsubmit="event.preventDefault()"><input id="em" type="email" placeholder="אימייל" autocomplete="username" required>
   <input id="pw" type="password" placeholder="סיסמה" autocomplete="current-password" required>
   <div class="err" id="lerr"></div><button class="p" type="submit">התחברות</button></form>
 </section>
+<script>
+/* Login health guard: run before the rest of the app. Never log credentials. */
+(()=>{
+  const form=document.getElementById('lf');
+  const msg=document.getElementById('lerr');
+  if(!form||!msg)return;
+  let handled=false;
+  form.addEventListener('submit', e=>{
+    e.preventDefault();
+    handled=false;
+    window.setTimeout(()=>{
+      const btn=form.querySelector('button[type="submit"]');
+      if(!handled && btn && btn.textContent.trim()==='התחברות' && !msg.textContent.trim()){
+        msg.textContent='מנגנון ההתחברות לא נטען. נסו לרענן את הדף. אם הבעיה חוזרת, בדקו את חיבור האינטרנט או את טעינת Supabase.';
+      }
+    },350);
+  },true);
+  window.SinaiLoginMarkHandled=()=>{handled=true;};
+  window.addEventListener('error',event=>{
+    if(document.getElementById('login')?.classList.contains('hid'))return;
+    if(!msg.textContent.trim())msg.textContent='שגיאה בטעינת האפליקציה: '+(event.message||'לא ניתן לטעון רכיב');
+  });
+  window.addEventListener('unhandledrejection',event=>{
+    if(document.getElementById('login')?.classList.contains('hid'))return;
+    if(!msg.textContent.trim())msg.textContent='שגיאה בחיבור: '+(event.reason?.message||'הבקשה נכשלה');
+  });
+})();
+</script>
 <section id="denied" class="auth hid">
   <h1>אין הרשאה</h1><p class="sub">החשבון הזה עדיין לא אושר לצפות ביומן. בקשו מבעל היומן לאשר אותו.</p>
   <button class="out">יציאה</button>
@@ -510,7 +538,7 @@ window.SinaiHolidays=(()=>{
  return{ensure,get,onChange};
 })();
 </script>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" onerror="document.getElementById('lerr').textContent='לא ניתן לטעון את Supabase. בדקו את החיבור לאינטרנט ונסו לרענן.'"></script>
 <script>
 /* ---- Supabase settings (public values, safe to keep here; protection comes from login + RLS) ---- */
 const SB_URL='https://pkghylgchdnykgamahjh.supabase.co';
@@ -518,6 +546,24 @@ const SB_KEY='sb_publishable_TlZtdKg6YXzgggxFpBbPhQ_FghbB3Ap';
 const db=supabase.createClient(SB_URL,SB_KEY);
 
 const $=s=>document.querySelector(s);
+/* Install sign-in immediately, before calendar/notes setup. */
+$('#lf').onsubmit=async e=>{
+  e.preventDefault();
+  window.SinaiLoginMarkHandled?.();
+  if(signInBusy)return;
+  signInBusy=true;
+  const btn=$('#lf button[type="submit"]');
+  if(btn){btn.disabled=true;btn.textContent='מתחבר…'}
+  authMessage('');
+  try{
+    const {error}=await db.auth.signInWithPassword({
+      email:$('#em').value.trim(),password:$('#pw').value
+    });
+    if(error){authMessage('לא ניתן להתחבר: '+error.message);return}
+    await enter();
+  }catch(err){authMessage('שגיאת התחברות: '+(err?.message||String(err)))}
+  finally{signInBusy=false;if(btn){btn.disabled=false;btn.textContent='התחברות'}}
+};
 /* טיפ מיינדפולנס קצר, מתחלף כל שעתיים. */
 const SINAI_TIPS=[
   {kind:'נשימה',text:'לפני שמתחילים דבר חדש, קחו שלוש נשימות רגועות ושימו לב לאוויר שנכנס ויוצא.'},
@@ -703,22 +749,7 @@ db.auth.onAuthStateChange(ev=>{
     show('login');window.SinaiSticky?.reset()
   }else if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')setTimeout(enter,0);
 });
-$('#lf').onsubmit=async e=>{
-  e.preventDefault();
-  if(signInBusy)return;
-  signInBusy=true;
-  const btn=$('#lf button[type="submit"]');
-  if(btn){btn.disabled=true;btn.textContent='מתחבר…'}
-  authMessage('');
-  try{
-    const {error}=await db.auth.signInWithPassword({
-      email:$('#em').value.trim(),password:$('#pw').value
-    });
-    if(error){authMessage('לא ניתן להתחבר: '+error.message);return}
-    await enter();
-  }catch(err){authMessage('שגיאת התחברות: '+(err?.message||String(err)))}
-  finally{signInBusy=false;if(btn){btn.disabled=false;btn.textContent='התחברות'}}
-};
+
 document.querySelectorAll('.out').forEach(b=>b.onclick=()=>db.auth.signOut());
 /* ---- urgent notices ---- */
 function drawUrgent(){
