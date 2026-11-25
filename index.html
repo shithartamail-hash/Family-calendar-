@@ -363,7 +363,7 @@ body.schedule-open{overflow:hidden}
 </style>
 </head>
 <body>
-<section id="login" class="auth hid">
+<section id="login" class="auth">
   <h1>היומן המשפחתי <span>שלנו</span></h1><p class="sub">התחברו כדי להמשיך</p>
   <form id="lf" onsubmit="event.preventDefault()"><input id="em" type="email" placeholder="אימייל" autocomplete="username" required>
   <input id="pw" type="password" placeholder="סיסמה" autocomplete="current-password" required>
@@ -559,9 +559,9 @@ $('#lf').onsubmit=async e=>{
     const {error}=await db.auth.signInWithPassword({
       email:$('#em').value.trim(),password:$('#pw').value
     });
-    if(error){authMessage('לא ניתן להתחבר: '+error.message);return}
+    if(error){authMessage(isConnectionFailure(error)?'לא ניתן להגיע ל־Supabase כרגע. בדוק את החיבור ונסה שוב.':'לא ניתן להתחבר: '+error.message);return}
     await enter();
-  }catch(err){authMessage('שגיאת התחברות: '+(err?.message||String(err)))}
+  }catch(err){authMessage(isConnectionFailure(err)?'אין כרגע חיבור תקין ל־Supabase. נסה שוב או החלף בין Wi-Fi לגלישה סלולרית.':'שגיאת התחברות: '+(err?.message||String(err)))}
   finally{signInBusy=false;if(btn){btn.disabled=false;btn.textContent='התחברות'}}
 };
 /* טיפ מיינדפולנס קצר, מתחלף כל שעתיים. */
@@ -717,37 +717,68 @@ function subscribe(){
   chan.subscribe();
 }
 
-/* ---- login: select only the authenticated family member and show real errors ---- */
+/* ---- Resilient sign-in: preserve session, retry intermittent network failures. ---- */
 let signInBusy=false;
+let enterTask=null;
+let enterGeneration=0;
 const authMessage=msg=>{const el=$('#lerr');if(el)el.textContent=msg};
-async function enter(){
-  try{
-    const {data:sessionData,error:sessionError}=await db.auth.getSession();
-    if(sessionError){show('login');authMessage('לא ניתן לבדוק את ההתחברות: '+sessionError.message);return}
-    const session=sessionData?.session;
-    if(!session){show('login');return}
-    // There may be multiple family_access rows. Checking without user_id
-    // and using maybeSingle() can incorrectly deny all members.
-    const {data,error}=await db.from('family_access')
-      .select('user_id').eq('user_id',session.user.id).maybeSingle();
-    if(error){
-      show('login');authMessage('התחברת, אבל בדיקת ההרשאה נכשלה: '+error.message);
-      return;
+const isConnectionFailure=err=>/load failed|failed to fetch|network|timeout|abort|fetch failed|connection|offline/i.test(String(err?.message||err||''));
+const pause=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+async function checkFamilyMember(userId){
+  let lastError;
+  for(let attempt=0;attempt<3;attempt++){
+    try{
+      const {data,error}=await db.from('family_access')
+        .select('user_id').eq('user_id',userId).maybeSingle();
+      if(error)throw error;
+      return data;
+    }catch(err){
+      lastError=err;
+      if(!isConnectionFailure(err)||attempt===2)break;
+      await pause(700*(attempt+1));
     }
-    if(!data){show('denied');return}
-    authMessage('');
-    show('app');
-    await Promise.all(['members','items','notes','rewards','urgent'].map(reload));
-    subscribe();
-    await window.SinaiSticky?.load();
-  }catch(err){show('login');authMessage('שגיאה בחיבור: '+(err?.message||String(err)))}
+  }
+  throw lastError;
+}
+async function enter(){
+  if(enterTask)return enterTask;
+  const generation=enterGeneration;
+  enterTask=(async()=>{
+    try{
+      const {data:sessionData,error:sessionError}=await db.auth.getSession();
+      if(sessionError)throw sessionError;
+      if(generation!==enterGeneration)return;
+      const session=sessionData?.session;
+      if(!session){show('login');return}
+      const member=await checkFamilyMember(session.user.id);
+      if(generation!==enterGeneration)return;
+      if(!member){show('denied');return}
+      authMessage('');
+      show('app');
+      await Promise.allSettled(['members','items','notes','rewards','urgent'].map(reload));
+      if(generation!==enterGeneration)return;
+      subscribe();
+      try{await window.SinaiSticky?.load()}catch(err){console.warn('Sticky notes unavailable',err)}
+    }catch(err){
+      if(generation!==enterGeneration)return;
+      show('login');
+      authMessage(isConnectionFailure(err)
+        ?'החיבור ל־Supabase נכשל זמנית. בדוק חיבור אינטרנט ולחץ שוב על התחברות; לא צריך לשנות סיסמה.'
+        :'בדיקת ההתחברות נכשלה: '+(err?.message||String(err)));
+      console.warn('Sinai sign-in check failed',err);
+    }
+  })();
+  try{await enterTask}finally{enterTask=null}
 }
 db.auth.onAuthStateChange(ev=>{
   if(ev==='SIGNED_OUT'){
+    enterGeneration++;
     if(chan)db.removeChannel(chan);
     chan=null;S={members:[],items:[],notes:[],rewards:[],urgent:[]};
-    show('login');window.SinaiSticky?.reset()
-  }else if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')setTimeout(enter,0);
+    show('login');window.SinaiSticky?.reset();
+  }else if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION'||ev==='TOKEN_REFRESHED'){
+    setTimeout(()=>{void enter()},0);
+  }
 });
 
 document.querySelectorAll('.out').forEach(b=>b.onclick=()=>db.auth.signOut());
