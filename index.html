@@ -671,25 +671,53 @@ function subscribe(){
   chan.subscribe();
 }
 
-/* ---- login ---- */
+/* ---- login: select only the authenticated family member and show real errors ---- */
+let signInBusy=false;
+const authMessage=msg=>{const el=$('#lerr');if(el)el.textContent=msg};
 async function enter(){
-  const{data:{session}}=await db.auth.getSession();
-  if(!session)return show('login');
-  const{data,error}=await db.from('family_access').select('user_id').maybeSingle();
-  if(error||!data)return show('denied');
-  show('app');
-  await Promise.all(['members','items','notes','rewards','urgent'].map(reload));
-  subscribe();
-  await window.SinaiSticky?.load();
+  try{
+    const {data:sessionData,error:sessionError}=await db.auth.getSession();
+    if(sessionError){show('login');authMessage('לא ניתן לבדוק את ההתחברות: '+sessionError.message);return}
+    const session=sessionData?.session;
+    if(!session){show('login');return}
+    // There may be multiple family_access rows. Checking without user_id
+    // and using maybeSingle() can incorrectly deny all members.
+    const {data,error}=await db.from('family_access')
+      .select('user_id').eq('user_id',session.user.id).maybeSingle();
+    if(error){
+      show('login');authMessage('התחברת, אבל בדיקת ההרשאה נכשלה: '+error.message);
+      return;
+    }
+    if(!data){show('denied');return}
+    authMessage('');
+    show('app');
+    await Promise.all(['members','items','notes','rewards','urgent'].map(reload));
+    subscribe();
+    await window.SinaiSticky?.load();
+  }catch(err){show('login');authMessage('שגיאה בחיבור: '+(err?.message||String(err)))}
 }
 db.auth.onAuthStateChange(ev=>{
-  if(ev==='SIGNED_OUT'){if(chan)db.removeChannel(chan);chan=null;S={members:[],items:[],notes:[],rewards:[],urgent:[]};show('login');window.SinaiSticky?.reset()}
-  else if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')setTimeout(enter,0);
+  if(ev==='SIGNED_OUT'){
+    if(chan)db.removeChannel(chan);
+    chan=null;S={members:[],items:[],notes:[],rewards:[],urgent:[]};
+    show('login');window.SinaiSticky?.reset()
+  }else if(ev==='SIGNED_IN'||ev==='INITIAL_SESSION')setTimeout(enter,0);
 });
 $('#lf').onsubmit=async e=>{
-  e.preventDefault();$('#lerr').textContent='';
-  const{error}=await db.auth.signInWithPassword({email:$('#em').value.trim(),password:$('#pw').value});
-  if(error)$('#lerr').textContent='אימייל או סיסמה שגויים';
+  e.preventDefault();
+  if(signInBusy)return;
+  signInBusy=true;
+  const btn=$('#lf button[type="submit"]');
+  if(btn){btn.disabled=true;btn.textContent='מתחבר…'}
+  authMessage('');
+  try{
+    const {error}=await db.auth.signInWithPassword({
+      email:$('#em').value.trim(),password:$('#pw').value
+    });
+    if(error){authMessage('לא ניתן להתחבר: '+error.message);return}
+    await enter();
+  }catch(err){authMessage('שגיאת התחברות: '+(err?.message||String(err)))}
+  finally{signInBusy=false;if(btn){btn.disabled=false;btn.textContent='התחברות'}}
 };
 document.querySelectorAll('.out').forEach(b=>b.onclick=()=>db.auth.signOut());
 /* ---- urgent notices ---- */
